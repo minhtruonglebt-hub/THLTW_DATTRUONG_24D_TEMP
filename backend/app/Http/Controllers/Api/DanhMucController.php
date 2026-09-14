@@ -12,9 +12,9 @@ class DanhMucController extends Controller
     // GET /api/danh-muc
     public function index(): AnonymousResourceCollection
     {
-        $danhMucs = DanhMuc::active()                       // status = 1
-            ->whereNull('parent_id')                        // chỉ lấy danh mục cấp 1
-            ->with(['children' => fn ($q) => $q->active()]) // nạp sẵn danh mục con
+        $danhMucs = DanhMuc::active()                       
+            ->whereNull('parent_id')                        
+            ->with(['children' => fn ($q) => $q->active()]) 
             ->orderBy('id')
             ->get();
 

@@ -13,7 +13,6 @@ class DanhMucResource extends JsonResource
             'id'       => $this->id,
             'name'     => $this->ten_danh_muc,
             'slug'     => $this->slug,
-            // chỉ có khi controller đã with('children')
             'children' => DanhMucResource::collection(
                               $this->whenLoaded('children')),
         ];
