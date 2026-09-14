@@ -23,6 +23,11 @@ class ThuongHieu extends Model
         'status' => 'boolean',
     ];
 
+    public function scopeActive($query)
+    {
+        return $query->where('status', 1);
+    }
+
     public function sanPhams()
     {
         return $this->hasMany(SanPham::class, 'thuong_hieu_id');
