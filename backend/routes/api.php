@@ -1,5 +1,8 @@
 <?php
+
+
 use App\Http\Controllers\Api\DanhMucController;
+use App\Http\Controllers\Api\ThuongHieuController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -20,3 +23,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::get('/danh-muc', [DanhMucController::class, 'index']);
 Route::get('/danh-muc/{slug}', [DanhMucController::class, 'show']);
+
+Route::get('/thuong-hieu', [ThuongHieuController::class, 'index']);
+Route::get('/thuong-hieu/{slug}', [ThuongHieuController::class, 'show']);
