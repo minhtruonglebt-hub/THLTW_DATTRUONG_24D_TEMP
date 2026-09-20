@@ -34,7 +34,7 @@ class SanPhamController extends Controller
         }
 
         $sanPhams = $query->orderByDesc('id')
-            ->paginate($request->integer('per_page', 12));
+            ->paginate((int) $request->input('per_page', 12));
 
         return SanPhamResource::collection($sanPhams);
     }
@@ -82,7 +82,7 @@ class SanPhamController extends Controller
                 ->store('san-pham', 'public');
         }
 
-        $sanPham = SanPham::create($data);
+        $sanPham = SanPham::create($data)->refresh();
 
         // Lưu các ảnh phụ (nếu có) vào bảng hinh_anh_san_pham
         if ($request->hasFile('hinh_anhs')) {

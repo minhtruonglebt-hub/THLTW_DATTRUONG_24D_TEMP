@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Storage;
 
 class HinhAnhSanPhamResource extends JsonResource
 {
-    public function toArray(Request $request): array
+    public function toArray($request): array
     {
         return [
             'id'          => $this->id,

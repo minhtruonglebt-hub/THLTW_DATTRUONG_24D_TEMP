@@ -7,14 +7,17 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class DanhMucResource extends JsonResource
 {
-    public function toArray(Request $request): array
+    public function toArray($request): array
     {
         return [
-            'id'       => $this->id,
+            'id'           => $this->id,
             'ten_danh_muc' => $this->ten_danh_muc,
-            'slug'     => $this->slug,
-            'children' => DanhMucResource::collection(
-                              $this->whenLoaded('children')),
+            'slug'         => $this->slug,
+            'mo_ta'        => $this->mo_ta,
+            'parent_id'    => $this->parent_id,
+            'status'       => (bool) $this->status,
+            'children'     => DanhMucResource::collection(
+                                  $this->whenLoaded('children')),
         ];
     }
 }

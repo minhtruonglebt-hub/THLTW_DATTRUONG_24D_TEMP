@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Storage;
 
 class SanPhamResource extends JsonResource
 {
-    public function toArray(Request $request): array
+    public function toArray($request): array
     {
         return [
             'id'             => $this->id,
