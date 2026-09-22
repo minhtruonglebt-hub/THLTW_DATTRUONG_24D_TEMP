@@ -1,0 +1,26 @@
+<?php
+
+namespace App\Http\Resources;
+
+use Illuminate\Http\Resources\Json\JsonResource;
+
+class DonHangResource extends JsonResource
+{
+    public function toArray($request): array
+    {
+        return [
+            'id' => $this->id,
+            'ma_don_hang' => $this->ma_don_hang,
+            'nguoi_dung_id' => $this->nguoi_dung_id,
+            'ho_ten' => $this->ho_ten,
+            'so_dien_thoai' => $this->so_dien_thoai,
+            'dia_chi_giao_hang' => $this->dia_chi_giao_hang,
+            'tong_tien' => $this->tong_tien,
+            'phuong_thuc_thanh_toan' => $this->phuong_thuc_thanh_toan,
+            'trang_thai' => $this->trang_thai,
+            'chi_tiets' => ChiTietDonHangResource::collection($this->whenLoaded('chiTiets')),
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+        ];
+    }
+}

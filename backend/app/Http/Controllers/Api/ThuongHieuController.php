@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ThuongHieuRequest;
 use App\Http\Resources\ThuongHieuResource;
 use App\Models\ThuongHieu;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -36,14 +36,9 @@ class ThuongHieuController extends Controller
 
     // POST /api/thuong-hieu
     // multipart/form-data: ten_thuong_hieu, mo_ta, status, logo (file, tuỳ chọn)
-    public function store(Request $request): ThuongHieuResource
+    public function store(ThuongHieuRequest $request): ThuongHieuResource
     {
-        $data = $request->validate([
-            'ten_thuong_hieu' => 'required|string|max:255',
-            'mo_ta'           => 'nullable|string',
-            'status'          => 'nullable|boolean',
-            'logo'            => 'nullable|image|max:2048', // tối đa 2MB
-        ]);
+        $data = $request->validated();
 
         $data['slug'] = $this->taoSlugDuyNhat($data['ten_thuong_hieu']);
 
@@ -58,14 +53,9 @@ class ThuongHieuController extends Controller
 
     // POST /api/thuong-hieu/{id} + field _method=PUT  (khi có gửi file logo)
     // hoặc PUT /api/thuong-hieu/{id} với JSON (khi không gửi file)
-    public function update(Request $request, ThuongHieu $thuongHieu): ThuongHieuResource
+    public function update(ThuongHieuRequest $request, ThuongHieu $thuongHieu): ThuongHieuResource
     {
-        $data = $request->validate([
-            'ten_thuong_hieu' => 'sometimes|required|string|max:255',
-            'mo_ta'           => 'nullable|string',
-            'status'          => 'nullable|boolean',
-            'logo'            => 'nullable|image|max:2048',
-        ]);
+        $data = $request->validated();
 
         if (isset($data['ten_thuong_hieu']) && $data['ten_thuong_hieu'] !== $thuongHieu->ten_thuong_hieu) {
             $data['slug'] = $this->taoSlugDuyNhat($data['ten_thuong_hieu'], $thuongHieu->id);

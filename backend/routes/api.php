@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\Api\DanhMucController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\DonHangController;
+use App\Http\Controllers\Api\GioHangController;
 use App\Http\Controllers\Api\HinhAnhSanPhamController;
 use App\Http\Controllers\Api\SanPhamController;
 use App\Http\Controllers\Api\ThuongHieuController;
@@ -17,6 +20,16 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+// ===================== NGƯỜI DÙNG =====================
+Route::post('/auth/dang-ky', [AuthController::class, 'register']);
+Route::post('/auth/dang-nhap', [AuthController::class, 'login']);
+Route::post('/auth/quen-mat-khau', [AuthController::class, 'forgotPassword']);
+Route::post('/auth/dat-lai-mat-khau', [AuthController::class, 'resetPassword']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/auth/me', [AuthController::class, 'me']);
+    Route::post('/auth/dang-xuat', [AuthController::class, 'logout']);
 });
 
 // ===================== DANH MỤC =====================
@@ -38,8 +51,22 @@ Route::get('/san-pham', [SanPhamController::class, 'index']);
 Route::post('/san-pham', [SanPhamController::class, 'store']);
 Route::get('/san-pham/{slug}', [SanPhamController::class, 'show']);
 Route::put('/san-pham/{sanPham}', [SanPhamController::class, 'update']);
+Route::post('/san-pham/{sanPham}', [SanPhamController::class, 'update']);
 Route::delete('/san-pham/{sanPham}', [SanPhamController::class, 'destroy']);
 
 // ===================== ẢNH PHỤ CỦA SẢN PHẨM =====================
 Route::post('/san-pham/{sanPham}/hinh-anh', [HinhAnhSanPhamController::class, 'store']);
 Route::delete('/hinh-anh-san-pham/{hinhAnh}', [HinhAnhSanPhamController::class, 'destroy']);
+
+// ===================== GIỎ HÀNG =====================
+Route::get('/gio-hang', [GioHangController::class, 'index']);
+Route::post('/gio-hang', [GioHangController::class, 'store']);
+Route::put('/gio-hang/{chiTiet}', [GioHangController::class, 'update']);
+Route::delete('/gio-hang/{chiTiet}', [GioHangController::class, 'destroy']);
+Route::delete('/gio-hang', [GioHangController::class, 'clear']);
+
+// ===================== ĐƠN HÀNG =====================
+Route::get('/don-hang', [DonHangController::class, 'index']);
+Route::post('/don-hang', [DonHangController::class, 'store']);
+Route::get('/don-hang/{donHang}', [DonHangController::class, 'show']);
+Route::post('/don-hang/{donHang}/huy', [DonHangController::class, 'cancel']);

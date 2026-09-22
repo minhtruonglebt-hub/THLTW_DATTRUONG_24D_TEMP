@@ -1,0 +1,112 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\DangKyRequest;
+use App\Http\Requests\DangNhapRequest;
+use App\Http\Requests\DatLaiMatKhauRequest;
+use App\Http\Requests\YeuCauDatLaiMatKhauRequest;
+use App\Models\DatLaiMatKhau;
+use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+
+class AuthController extends Controller
+{
+    public function register(DangKyRequest $request): JsonResponse
+    {
+        $user = User::create([
+            'username' => $request->username,
+            'ho_ten' => $request->ho_ten,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'so_dien_thoai' => $request->so_dien_thoai,
+            'dia_chi' => $request->dia_chi,
+            'vai_tro' => 'member',
+            'status' => 1,
+        ]);
+
+        return response()->json([
+            'message' => 'Đăng ký thành công',
+            'user' => $user,
+            'token' => $user->createToken('api-token')->plainTextToken,
+        ], 201);
+    }
+
+    public function login(DangNhapRequest $request): JsonResponse
+    {
+        $user = User::where('email', $request->login)
+            ->orWhere('username', $request->login)
+            ->first();
+
+        if (!$user || !$user->status || !Hash::check($request->password, $user->password)) {
+            return response()->json(['message' => 'Thông tin đăng nhập không đúng'], 401);
+        }
+
+        return response()->json([
+            'message' => 'Đăng nhập thành công',
+            'user' => $user,
+            'token' => $user->createToken('api-token')->plainTextToken,
+        ]);
+    }
+
+    public function me(Request $request): JsonResponse
+    {
+        return response()->json($request->user());
+    }
+
+    public function logout(Request $request): JsonResponse
+    {
+        $request->user()->currentAccessToken()?->delete();
+
+        return response()->json(['message' => 'Đăng xuất thành công']);
+    }
+
+    public function forgotPassword(YeuCauDatLaiMatKhauRequest $request): JsonResponse
+    {
+        $user = User::where('email', $request->email)->where('status', 1)->first();
+
+        if (!$user) {
+            return response()->json(['message' => 'Nếu email tồn tại, mã đặt lại mật khẩu đã được tạo']);
+        }
+
+        DatLaiMatKhau::where('nguoi_dung_id', $user->id)->where('da_su_dung', false)->update(['da_su_dung' => true]);
+        $token = Str::random(64);
+        DatLaiMatKhau::create([
+            'nguoi_dung_id' => $user->id,
+            'token' => hash('sha256', $token),
+            'thoi_han' => now()->addMinutes(60),
+            'da_su_dung' => false,
+            'created_at' => now(),
+        ]);
+
+        return response()->json([
+            'message' => 'Mã đặt lại mật khẩu đã được tạo',
+            'token' => $token,
+        ]);
+    }
+
+    public function resetPassword(DatLaiMatKhauRequest $request): JsonResponse
+    {
+        $user = User::where('email', $request->email)->where('status', 1)->first();
+        $reset = $user ? DatLaiMatKhau::where('nguoi_dung_id', $user->id)
+            ->where('token', hash('sha256', $request->token))
+            ->where('da_su_dung', false)
+            ->where('thoi_han', '>', now())
+            ->latest('id')
+            ->first() : null;
+
+        if (!$reset) {
+            return response()->json(['message' => 'Mã đặt lại mật khẩu không hợp lệ hoặc đã hết hạn'], 422);
+        }
+
+        $user->update(['password' => Hash::make($request->password)]);
+        $reset->update(['da_su_dung' => true]);
+        $user->tokens()->delete();
+
+        return response()->json(['message' => 'Đặt lại mật khẩu thành công']);
+    }
+}
