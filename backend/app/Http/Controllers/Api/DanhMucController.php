@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DanhMucRequest;
 use App\Http\Resources\DanhMucResource;
 use App\Models\DanhMuc;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Str;
 
@@ -37,14 +37,9 @@ class DanhMucController extends Controller
 
     // POST /api/danh-muc
     // Body (JSON): ten_danh_muc, mo_ta, parent_id, status
-    public function store(Request $request): DanhMucResource
+    public function store(DanhMucRequest $request): DanhMucResource
     {
-        $data = $request->validate([
-            'ten_danh_muc' => 'required|string|max:255',
-            'mo_ta'        => 'nullable|string',
-            'parent_id'    => 'nullable|integer|exists:danh_muc,id',
-            'status'       => 'nullable|boolean',
-        ]);
+        $data = $request->validated();
 
         $data['slug'] = $this->taoSlugDuyNhat($data['ten_danh_muc']);
 
@@ -55,15 +50,9 @@ class DanhMucController extends Controller
     }
 
     // PUT /api/danh-muc/{id}
-    public function update(Request $request, DanhMuc $danhMuc): DanhMucResource
+    public function update(DanhMucRequest $request, DanhMuc $danhMuc): DanhMucResource
     {
-        $data = $request->validate([
-            'ten_danh_muc' => 'sometimes|required|string|max:255',
-            'mo_ta'        => 'nullable|string',
-            // không cho chọn chính nó làm danh mục cha
-            'parent_id'    => 'nullable|integer|exists:danh_muc,id|not_in:'.$danhMuc->id,
-            'status'       => 'nullable|boolean',
-        ]);
+        $data = $request->validated();
 
         if (isset($data['ten_danh_muc']) && $data['ten_danh_muc'] !== $danhMuc->ten_danh_muc) {
             $data['slug'] = $this->taoSlugDuyNhat($data['ten_danh_muc'], $danhMuc->id);

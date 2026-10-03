@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\HinhAnhSanPhamRequest;
 use App\Http\Resources\HinhAnhSanPhamResource;
 use App\Models\HinhAnhSanPham;
 use App\Models\SanPham;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Storage;
 
@@ -14,13 +14,8 @@ class HinhAnhSanPhamController extends Controller
 {
     // POST /api/san-pham/{sanPham}/hinh-anh
     // multipart/form-data: hinh_anhs[] -> nhiều file
-    public function store(Request $request, SanPham $sanPham): AnonymousResourceCollection
+    public function store(HinhAnhSanPhamRequest $request, SanPham $sanPham): AnonymousResourceCollection
     {
-        $request->validate([
-            'hinh_anhs'   => 'required|array|min:1',
-            'hinh_anhs.*' => 'image|max:2048',
-        ]);
-
         $thuTuHienTai = (int) $sanPham->hinhAnhs()->max('thu_tu');
 
         $anhMoi = collect();

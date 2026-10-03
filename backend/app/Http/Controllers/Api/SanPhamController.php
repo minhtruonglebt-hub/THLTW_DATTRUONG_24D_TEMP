@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\SanPhamRequest;
 use App\Http\Resources\SanPhamResource;
 use App\Models\HinhAnhSanPham;
 use App\Models\SanPham;
@@ -58,21 +59,9 @@ class SanPhamController extends Controller
     // multipart/form-data:
     //   hinh_anh      -> 1 file (ảnh đại diện)
     //   hinh_anhs[]   -> nhiều file (ảnh phụ, tuỳ chọn)
-    public function store(Request $request): SanPhamResource
+    public function store(SanPhamRequest $request): SanPhamResource
     {
-        $data = $request->validate([
-            'ten_san_pham'   => 'required|string|max:255',
-            'danh_muc_id'    => 'required|integer|exists:danh_muc,id',
-            'thuong_hieu_id' => 'required|integer|exists:thuong_hieu,id',
-            'gia'            => 'required|numeric|min:0',
-            'gia_khuyen_mai' => 'nullable|numeric|min:0',
-            'so_luong'       => 'nullable|integer|min:0',
-            'mo_ta_ngan'     => 'nullable|string',
-            'mo_ta'          => 'nullable|string',
-            'status'         => 'nullable|boolean',
-            'hinh_anh'       => 'nullable|image|max:2048',       // tối đa 2MB
-            'hinh_anhs.*'    => 'nullable|image|max:2048',
-        ]);
+        $data = $request->validated();
 
         $data['slug'] = $this->taoSlugDuyNhat($data['ten_san_pham']);
 
@@ -103,21 +92,10 @@ class SanPhamController extends Controller
         );
     }
 
-    // POST /api/san-pham/{id}  (dùng POST + _method=PUT vì multipart/form-data)
-    public function update(Request $request, SanPham $sanPham): SanPhamResource
+    // PUT/POST /api/san-pham/{id}  (POST + _method=PUT khi multipart/form-data)
+    public function update(SanPhamRequest $request, SanPham $sanPham): SanPhamResource
     {
-        $data = $request->validate([
-            'ten_san_pham'   => 'sometimes|required|string|max:255',
-            'danh_muc_id'    => 'sometimes|required|integer|exists:danh_muc,id',
-            'thuong_hieu_id' => 'sometimes|required|integer|exists:thuong_hieu,id',
-            'gia'            => 'sometimes|required|numeric|min:0',
-            'gia_khuyen_mai' => 'nullable|numeric|min:0',
-            'so_luong'       => 'nullable|integer|min:0',
-            'mo_ta_ngan'     => 'nullable|string',
-            'mo_ta'          => 'nullable|string',
-            'status'         => 'nullable|boolean',
-            'hinh_anh'       => 'nullable|image|max:2048',
-        ]);
+        $data = $request->validated();
 
         if (isset($data['ten_san_pham']) && $data['ten_san_pham'] !== $sanPham->ten_san_pham) {
             $data['slug'] = $this->taoSlugDuyNhat($data['ten_san_pham'], $sanPham->id);
