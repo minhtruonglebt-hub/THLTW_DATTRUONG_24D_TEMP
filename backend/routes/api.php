@@ -70,3 +70,15 @@ Route::get('/don-hang', [DonHangController::class, 'index']);
 Route::post('/don-hang', [DonHangController::class, 'store']);
 Route::get('/don-hang/{donHang}', [DonHangController::class, 'show']);
 Route::post('/don-hang/{donHang}/huy', [DonHangController::class, 'cancel']);
+
+
+// ===================== ADMIN (chỉ đọc) =====================
+Route::prefix('admin')->group(function () {
+    $c = \App\Http\Controllers\Api\AdminController::class;
+    Route::get('/danh-muc', [$c, 'danhMuc']);
+    Route::get('/thuong-hieu', [$c, 'thuongHieu']);
+    Route::get('/san-pham', [$c, 'sanPham']);
+    Route::get('/don-hang', [$c, 'donHang']);
+    Route::get('/gio-hang', [$c, 'gioHang']);
+    Route::get('/nguoi-dung', [$c, 'nguoiDung']);
+});
