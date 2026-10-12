@@ -3,7 +3,7 @@
 // =====================================================================
 // FILE NÀY LÀ GÌ?
 // Menu bên trái của trang quản trị.
-//   - Các mục menu tự sinh từ RESOURCES (lib/admin-config.tsx)
+//   - Các mục menu lấy từ MENU (lib/menu.ts)
 //   - Dưới cùng là khu vực tài khoản:
 //       đã đăng nhập  -> hiện tên + nút "Đăng xuất"
 //       chưa đăng nhập -> hiện link "Đăng nhập" / "Đăng ký"
@@ -11,7 +11,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { RESOURCES } from "@/lib/admin-config";
+import { MENU } from "@/lib/menu";
 import { logout, useCurrentUser } from "@/lib/auth";
 
 export default function Sidebar() {
@@ -20,7 +20,7 @@ export default function Sidebar() {
   const user = useCurrentUser(); // người đang đăng nhập (null nếu chưa)
 
   // Menu = "Tổng quan" + tất cả các mục quản lý
-  const menuItems = [{ key: "", title: "Tổng quan" }, ...RESOURCES];
+  const menuItems = [{ key: "", title: "Tổng quan" }, ...MENU];
 
   // Bấm "Đăng xuất": huỷ phiên đăng nhập rồi về trang đăng nhập
   async function handleLogout() {

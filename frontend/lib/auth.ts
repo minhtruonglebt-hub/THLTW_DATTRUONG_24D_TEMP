@@ -16,8 +16,7 @@
 // =====================================================================
 
 import { useMemo, useSyncExternalStore } from "react";
-import { API } from "./admin-config";
-import { callApi } from "./admin-api";
+import { API, callApi } from "./api";
 
 // ---------------------------------------------------------------------
 // 1. KIỂU DỮ LIỆU
