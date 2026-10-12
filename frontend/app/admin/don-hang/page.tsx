@@ -4,45 +4,40 @@
 // TRANG ĐƠN HÀNG  ->  mở bằng đường link /admin/don-hang
 //
 // Chức năng:
-//   - Xem danh sách đơn hàng, tìm kiếm
-//   - Huỷ đơn (chỉ đơn đang "Chờ xác nhận")
+//   1. Xem danh sách đơn hàng    2. Tìm kiếm    3. Huỷ đơn (chỉ đơn "Chờ xác nhận")
 // Đơn hàng do khách đặt nên admin KHÔNG thêm / sửa / xoá ở đây.
 // =====================================================================
 
 import { useState } from "react";
 import { API, callApi, useList, type Row } from "@/lib/api";
-import { date, matches, money } from "@/lib/format";
-import Badge from "../../components/Badge";
-import Notice from "../../components/Notice";
-import PageHeader from "../../components/PageHeader";
-import { Table, Tr, Td } from "../../components/Table";
+import { date, money } from "@/lib/format";
 
-// Ghép danh sách sản phẩm của đơn thành 1 câu: "Áo thun ×2, Quần jean ×1"
+const inputClass = "w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm outline-none focus:border-teal-600";
+const th = "whitespace-nowrap px-4 py-3 font-medium"; // ô tiêu đề cột
+const td = "px-4 py-3"; // ô dữ liệu
+
+// Ghép các sản phẩm của đơn thành 1 câu: "Áo thun ×2, Quần jean ×1"
 function productText(order: Row): string {
   const items: Row[] = order.chi_tiets ?? [];
   const names = items.map((c) => `${c.ten_san_pham ?? c.san_pham?.ten_san_pham} ×${c.so_luong}`);
   return names.join(", ") || "—";
 }
 
-// Nhãn trạng thái đơn hàng
-function StatusBadge({ status }: { status: string }) {
-  if (status === "cho_xac_nhan") return <Badge text="Chờ xác nhận" tone="warn" />;
-  if (status === "da_huy") return <Badge text="Đã huỷ" tone="off" />;
-  return <Badge text={status} tone="ok" />;
-}
-
 export default function DonHangPage() {
+  // ---------- 1. DỮ LIỆU ----------
   const { rows, error, reload } = useList("don-hang");
 
   const [search, setSearch] = useState("");
   const [notice, setNotice] = useState<{ ok: boolean; text: string } | null>(null);
 
-  // Lọc theo ô tìm kiếm (tìm theo mã đơn, tên, SĐT, địa chỉ, sản phẩm)
+  // ---------- 2. TÌM KIẾM ----------
+  // Giữ lại những dòng có (mã đơn + tên + SĐT + địa chỉ + sản phẩm) chứa từ khoá.
+  const keyword = search.trim().toLowerCase();
   const list = (rows ?? []).filter((r) =>
-    matches(search, [r.ma_don_hang, r.ho_ten, r.so_dien_thoai, r.dia_chi_giao_hang, productText(r)])
+    `${r.ma_don_hang} ${r.ho_ten} ${r.so_dien_thoai} ${r.dia_chi_giao_hang} ${productText(r)}`.toLowerCase().includes(keyword)
   );
 
-  // Bấm "Huỷ đơn"
+  // ---------- 3. HUỶ ĐƠN ----------
   async function handleCancel(order: Row) {
     if (!confirm(`Huỷ đơn ${order.ma_don_hang}?`)) return;
     try {
@@ -54,49 +49,95 @@ export default function DonHangPage() {
     }
   }
 
+  // ---------- GIAO DIỆN ----------
   return (
     <>
-      <PageHeader title="Đơn hàng" count={list.length} search={search} onSearch={setSearch} />
+      {/* Đầu trang: tiêu đề, ô tìm kiếm (không có nút thêm) */}
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold">Đơn hàng</h1>
+          <p className="text-sm text-slate-500">{list.length} bản ghi</p>
+        </div>
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Tìm kiếm…"
+          className={`${inputClass} w-64`}
+        />
+      </div>
 
-      <Notice text={error} />
-      <Notice text={notice?.text} ok={notice?.ok} />
+      {error && <p className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+      {notice && (
+        <p className={`mb-4 rounded-lg p-3 text-sm ${notice.ok ? "bg-emerald-50 text-emerald-800" : "bg-red-50 text-red-700"}`}>
+          {notice.text}
+        </p>
+      )}
       {!rows && !error && <p className="text-slate-500">Đang tải…</p>}
 
+      {/* Bảng danh sách */}
       {rows && (
-        <Table
-          headers={["Mã đơn", "Khách nhận", "Địa chỉ giao", "Sản phẩm", "Tổng tiền", "Thanh toán", "Tài khoản", "Trạng thái", "Ngày đặt"]}
-          hasActions
-          isEmpty={list.length === 0}
-        >
-          {list.map((r) => (
-            <Tr key={r.id}>
-              <Td>{r.ma_don_hang}</Td>
-              <Td>
-                {r.ho_ten} · {r.so_dien_thoai}
-              </Td>
-              <Td>{r.dia_chi_giao_hang ?? "—"}</Td>
-              <Td>{productText(r)}</Td>
-              <Td>{money(r.tong_tien)}</Td>
-              <Td>{r.phuong_thuc_thanh_toan ?? "—"}</Td>
-              <Td>{r.nguoi_dung_id ?? "Khách"}</Td>
-              <Td>
-                <StatusBadge status={r.trang_thai} />
-              </Td>
-              <Td>{date(r.created_at)}</Td>
-              <Td right>
-                {/* Chỉ đơn đang chờ xác nhận mới huỷ được */}
-                {r.trang_thai === "cho_xac_nhan" && (
-                  <button
-                    onClick={() => handleCancel(r)}
-                    className="rounded-md bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700 hover:bg-amber-100"
-                  >
-                    Huỷ đơn
-                  </button>
-                )}
-              </Td>
-            </Tr>
-          ))}
-        </Table>
+        <div className="overflow-x-auto rounded-2xl border border-stone-200 bg-white shadow-sm">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-stone-100 text-slate-600">
+              <tr>
+                <th className={th}>Mã đơn</th>
+                <th className={th}>Khách nhận</th>
+                <th className={th}>Địa chỉ giao</th>
+                <th className={th}>Sản phẩm</th>
+                <th className={th}>Tổng tiền</th>
+                <th className={th}>Thanh toán</th>
+                <th className={th}>Tài khoản</th>
+                <th className={th}>Trạng thái</th>
+                <th className={th}>Ngày đặt</th>
+                <th className={`${th} text-right`}>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              {list.map((r) => (
+                <tr key={r.id} className="border-t border-stone-100 hover:bg-teal-50/40">
+                  <td className={td}>{r.ma_don_hang}</td>
+                  <td className={td}>
+                    {r.ho_ten} · {r.so_dien_thoai}
+                  </td>
+                  <td className={td}>{r.dia_chi_giao_hang ?? "—"}</td>
+                  <td className={td}>{productText(r)}</td>
+                  <td className={td}>{money(r.tong_tien)}</td>
+                  <td className={td}>{r.phuong_thuc_thanh_toan ?? "—"}</td>
+                  <td className={td}>{r.nguoi_dung_id ?? "Khách"}</td>
+                  <td className={td}>
+                    {/* Mỗi trạng thái một màu */}
+                    {r.trang_thai === "cho_xac_nhan" && (
+                      <span className="rounded bg-amber-100 px-2 py-0.5 text-xs text-amber-800">Chờ xác nhận</span>
+                    )}
+                    {r.trang_thai === "da_huy" && (
+                      <span className="rounded bg-stone-200 px-2 py-0.5 text-xs text-stone-600">Đã huỷ</span>
+                    )}
+                    {r.trang_thai !== "cho_xac_nhan" && r.trang_thai !== "da_huy" && (
+                      <span className="rounded bg-emerald-100 px-2 py-0.5 text-xs text-emerald-800">{r.trang_thai}</span>
+                    )}
+                  </td>
+                  <td className={td}>{date(r.created_at)}</td>
+                  <td className={`${td} whitespace-nowrap text-right`}>
+                    {/* Chỉ đơn đang chờ xác nhận mới có nút Huỷ đơn */}
+                    {r.trang_thai === "cho_xac_nhan" && (
+                      <button onClick={() => handleCancel(r)} className="rounded-md bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700 hover:bg-amber-100">
+                        Huỷ đơn
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+
+              {list.length === 0 && (
+                <tr>
+                  <td colSpan={10} className="px-4 py-10 text-center text-slate-500">
+                    Không có dữ liệu
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       )}
     </>
   );
