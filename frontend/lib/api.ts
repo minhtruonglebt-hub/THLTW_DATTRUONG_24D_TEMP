@@ -7,7 +7,7 @@
 //   - useList()   : hook giúp trang nào cũng lấy danh sách chỉ bằng 1 dòng
 // =====================================================================
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 // "Row" = một dòng dữ liệu (một danh mục, một sản phẩm, một đơn hàng...)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -38,12 +38,9 @@ function getErrorMessage(json: Row): string {
 //                 nơi gọi hàm sẽ bắt bằng try/catch
 //   - token (không bắt buộc): truyền vào khi API yêu cầu đăng nhập
 export async function callApi(url: string, options: RequestInit, token?: string): Promise<Row> {
-  const headers: Record<string, string> = {
-    Accept: "application/json", // báo Laravel trả JSON (không trả trang HTML)
-  };
-  if (token) {
-    headers.Authorization = `Bearer ${token}`; // "thẻ ra vào" của người đã đăng nhập
-  }
+  const headers = new Headers(options.headers);
+  headers.set("Accept", "application/json");
+  if (token) headers.set("Authorization", `Bearer ${token}`);
 
   let response: Response;
   try {
@@ -68,7 +65,11 @@ export async function callApi(url: string, options: RequestInit, token?: string)
 // key là tên mục, vd: "danh-muc" -> gọi  GET  /api/admin/danh-muc
 export async function fetchList(key: string): Promise<Row[]> {
   const json = await callApi(`${API}/admin/${key}`, { cache: "no-store" });
-  return json.data ?? json; // Laravel bọc danh sách trong "data"
+  const rows = json.data ?? json;
+  if (!Array.isArray(rows)) {
+    throw new Error("Dữ liệu danh sách không đúng định dạng.");
+  }
+  return rows;
 }
 
 // ---------------------------------------------------------------------
@@ -81,20 +82,36 @@ export async function fetchList(key: string): Promise<Row[]> {
 export function useList(key: string) {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [error, setError] = useState("");
-  const [reloadCount, setReloadCount] = useState(0); // mỗi lần tăng số này là tải lại 1 lần
+  const [loading, setLoading] = useState(true);
+  const [reloadCount, setReloadCount] = useState(0);
 
   useEffect(() => {
+    let isCurrentRequest = true;
+
     fetchList(key)
       .then((data) => {
+        if (!isCurrentRequest) return;
         setRows(data);
         setError("");
       })
-      .catch((e) => setError(e.message));
+      .catch((cause: unknown) => {
+        if (!isCurrentRequest) return;
+        setError(cause instanceof Error ? cause.message : "Không tải được dữ liệu.");
+      })
+      .finally(() => {
+        if (isCurrentRequest) setLoading(false);
+      });
+
+    return () => {
+      isCurrentRequest = false;
+    };
   }, [key, reloadCount]);
 
-  function reload() {
-    setReloadCount(reloadCount + 1);
-  }
+  const reload = useCallback(() => {
+    setError("");
+    setLoading(true);
+    setReloadCount((count) => count + 1);
+  }, []);
 
-  return { rows, error, reload };
+  return { rows, error, loading, reload };
 }

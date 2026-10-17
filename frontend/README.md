@@ -1,36 +1,84 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Frontend quản lý cửa hàng
 
-## Getting Started
+Giao diện Next.js dùng để quản lý danh mục, sản phẩm, thương hiệu, đơn hàng, giỏ hàng và người dùng thông qua API Laravel.
 
-First, run the development server:
+## Chạy ứng dụng
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+1. Mở terminal tại thư mục `frontend/`.
+2. Cài package nếu đây là lần chạy đầu:
+
+   ```bash
+   npm install
+   ```
+
+3. Tạo file `.env.local` và cấu hình địa chỉ API:
+
+   ```env
+   NEXT_PUBLIC_API_URL=http://127.0.0.1:8000/api
+   ```
+
+4. Bật Laravel, sau đó chạy:
+
+   ```bash
+   npm run dev
+   ```
+
+Mở `http://localhost:3000`.
+
+## Cấu trúc thư mục
+
+```text
+frontend/
+├─ app/
+│  ├─ (shop)/              Khu vực cửa hàng (đã tạo sẵn file rỗng, chưa có code)
+│  │  ├─ cart/  checkout/  contact/  login/  register/  profile/
+│  │  ├─ orders/ (+ [id])  posts/ (+ [slug])  products/ (+ [slug])
+│  │  └─ layout.js  layout.css  page.jsx
+│  ├─ admin/
+│  │  ├─ login/            Đăng nhập admin  -> /admin/login
+│  │  ├─ categories/       page (danh sách) + create + [id]   (+ trash: chưa có API)
+│  │  ├─ brands/           page + create + [id]               (+ trash: chưa có API)
+│  │  ├─ products/         page + create + [id]               (+ trash: chưa có API)
+│  │  ├─ orders/           page (xem, huỷ đơn chờ xác nhận)
+│  │  ├─ users/            page (chỉ xem)
+│  │  ├─ carts/            page (chỉ xem)
+│  │  ├─ banners/ contacts/ menus/ posts/ topics/   File rỗng, chưa có API
+│  │  ├─ layout.jsx        Khung admin (menu trái + nội dung)
+│  │  └─ page.jsx          Tổng quan
+│  ├─ globals.css
+│  └─ layout.js
+├─ components/
+│  ├─ admin/
+│  │  ├─ AdminSidebar.tsx  Menu quản trị
+│  │  └─ ResourceList.tsx  Bảng, tìm kiếm, xoá và thao tác đơn hàng
+│  ├─ AuthCard.tsx  Form.tsx  Table.tsx  PageHeader.tsx
+│  └─ Badge.tsx  Notice.tsx  RowActions.tsx  Thumb.tsx
+└─ lib/
+   ├─ api.ts             Gọi API và hook lấy danh sách
+   ├─ admin-config.tsx   Cột dữ liệu hiển thị cho từng mục
+   ├─ auth.ts            Đăng nhập, đăng ký và đăng xuất
+   ├─ format.ts          Định dạng tiền và ngày
+   └─ menu.ts            Danh sách menu (key = API, path = thư mục trong app/admin)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Cách các phần kết nối
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Mỗi thư mục trong `app/admin/` là một đường dẫn, ví dụ `admin/products` mở tại `/admin/products`, thêm mới ở `/admin/products/create`, sửa ở `/admin/products/{id}`.
+- Trang danh sách gọi `ResourceList` với `resourceKey` (tên API Laravel, vd `san-pham`) và `editPath` (thư mục admin, vd `products`). Cấu hình cột nằm trong `lib/admin-config.tsx`.
+- Trang `create` và `[id]` là form riêng; lưu xong quay về danh sách.
+- `useList("san-pham")` gọi `GET /api/admin/san-pham`; cập nhật gửi `POST` kèm `_method=PUT`, ảnh gửi bằng `FormData`.
+- Ảnh được trỏ về host API; nếu ảnh hiện dấu `—`, hãy kiểm tra file trong `backend/storage/app/public` và liên kết `backend/public/storage`.
+- Đơn hàng chỉ huỷ được khi trạng thái là `cho_xac_nhan`. Giỏ hàng và người dùng là trang xem.
+- Các file rỗng (`(shop)`, `trash`, banners, contacts, menus, posts, topics, orders/create...) cần được viết code trước khi chạy `npm run build`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Chức năng
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Mục | Xem | Tìm kiếm | Thêm/Sửa | Xoá | Ghi chú |
+|---|---:|---:|---:|---:|---|
+| Danh mục | Có | Có | Có | Có | Chọn danh mục cha |
+| Thương hiệu | Có | Có | Có | Có | Tải logo |
+| Sản phẩm | Có | Có | Có | Có | Chọn danh mục, thương hiệu và tải ảnh |
+| Đơn hàng | Có | Có | — | — | Huỷ đơn đang chờ xác nhận |
+| Giỏ hàng | Có | Có | — | — | Chỉ xem |
+| Người dùng | Có | Có | — | — | Chỉ xem |
+| Tài khoản | — | — | — | — | Đăng nhập, đăng ký, đăng xuất |
