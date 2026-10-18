@@ -33,3 +33,15 @@ export async function getProductBySlug(slug) {
   const json = await callApi(`${API}/san-pham/${slug}`, { cache: "no-store" });
   return json.data ?? json;
 }
+
+// Lấy sản phẩm cùng danh mục bằng ID hoặc slug sản phẩm hiện tại.
+export async function getRelatedProducts(identifier, limit = 4) {
+  const query = new URLSearchParams({ limit: String(limit) });
+  const encodedIdentifier = encodeURIComponent(identifier);
+  const json = await callApi(
+    `${API}/san-pham/${encodedIdentifier}/lien-quan?${query.toString()}`,
+    { cache: "no-store" },
+  );
+
+  return json.data ?? [];
+}
