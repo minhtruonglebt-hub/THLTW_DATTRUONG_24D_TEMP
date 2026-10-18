@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import ProductList from "@/components/shop/product/ProductList";
 import { getProductBySlug, getRelatedProducts } from "@/services/productServices";
@@ -20,7 +21,7 @@ function ProductImage({ src, alt, className = "" }) {
     );
   }
 
-  return <img src={imageUrl} alt={alt} className={className} />;
+  return <Image src={imageUrl} alt={alt} width={1200} height={1200} unoptimized className={className} />;
 }
 
 export default function ProductDetailPage() {
@@ -30,39 +31,46 @@ export default function ProductDetailPage() {
   const [selectedImage, setSelectedImage] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [loadedSlug, setLoadedSlug] = useState(null);
   const [relatedLoading, setRelatedLoading] = useState(false);
+  const [relatedError, setRelatedError] = useState("");
   const [error, setError] = useState("");
+
+  const loadRelatedProducts = useCallback(async (currentProduct, isCurrentRequest = () => true) => {
+    setRelatedLoading(true);
+    setRelatedError("");
+
+    try {
+      const products = await getRelatedProducts(currentProduct.slug || currentProduct.id, 4);
+      if (isCurrentRequest()) setRelatedProducts(products);
+    } catch (cause) {
+      if (isCurrentRequest()) {
+        setRelatedError(
+          cause instanceof Error ? cause.message : "Không tải được sản phẩm liên quan.",
+        );
+      }
+    } finally {
+      if (isCurrentRequest()) setRelatedLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     let isCurrentRequest = true;
-
-    setLoading(true);
-    setRelatedLoading(false);
-    setError("");
-    setProduct(null);
-    setRelatedProducts([]);
-    setSelectedImage("");
-    setQuantity(1);
 
     getProductBySlug(slug)
       .then(async (currentProduct) => {
         if (!isCurrentRequest) return;
 
+        setError("");
+        setRelatedProducts([]);
+        setRelatedError("");
+        setQuantity(1);
         setProduct(currentProduct);
         setSelectedImage(currentProduct.hinh_anh_url || "");
+        setLoadedSlug(slug);
         setLoading(false);
 
-        setRelatedLoading(true);
-        try {
-          const products = await getRelatedProducts(currentProduct.slug || currentProduct.id, 4);
-          if (isCurrentRequest) {
-            setRelatedProducts(products);
-          }
-        } catch (relatedError) {
-          console.error("Không tải được sản phẩm liên quan:", relatedError);
-        } finally {
-          if (isCurrentRequest) setRelatedLoading(false);
-        }
+        await loadRelatedProducts(currentProduct, () => isCurrentRequest);
       })
       .catch((cause) => {
         if (isCurrentRequest) {
@@ -70,13 +78,16 @@ export default function ProductDetailPage() {
         }
       })
       .finally(() => {
-        if (isCurrentRequest) setLoading(false);
+        if (isCurrentRequest) {
+          setLoading(false);
+          setLoadedSlug(slug);
+        }
       });
 
     return () => {
       isCurrentRequest = false;
     };
-  }, [slug]);
+  }, [slug, loadRelatedProducts]);
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -84,7 +95,7 @@ export default function ProductDetailPage() {
     alert(`Đã thêm ${quantity} sản phẩm vào giỏ hàng`);
   };
 
-  if (loading) {
+  if (loading || loadedSlug !== slug) {
     return <p className="mx-auto max-w-7xl px-6 py-20 text-center text-slate-500">Đang tải sản phẩm...</p>;
   }
 
@@ -209,11 +220,26 @@ export default function ProductDetailPage() {
 
         {relatedLoading ? (
           <p className="py-8 text-center text-slate-500">Đang tải sản phẩm liên quan...</p>
+        ) : relatedError ? (
+          <div role="alert" className="rounded-xl bg-red-50 p-5 text-center text-sm text-red-700">
+            <p>Không tải được sản phẩm liên quan. {relatedError}</p>
+            <button
+              type="button"
+              onClick={() => loadRelatedProducts(product)}
+              className="mt-3 rounded-lg border border-red-200 bg-white px-4 py-2 font-semibold text-red-700 transition hover:bg-red-100"
+            >
+              Thử lại
+            </button>
+          </div>
         ) : relatedProducts.length > 0 ? (
-          <ProductList products={relatedProducts} onAddToCart={(item) => {
-            addToCart(item);
-            alert("Đã thêm vào giỏ hàng");
-          }} />
+          <ProductList
+            products={relatedProducts}
+            onAddToCart={(item) => {
+              addToCart(item);
+              alert("Đã thêm vào giỏ hàng");
+            }}
+            gridClass="grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
+          />
         ) : (
           <p className="py-8 text-center text-slate-500">Chưa có sản phẩm khác trong danh mục này.</p>
         )}

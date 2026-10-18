@@ -29,9 +29,10 @@ function saveCart(cart) {
 export function addToCart(product, quantity = 1) {
   const cart = getCart();
   const exist = cart.find((item) => item.id === product.id);
+  const safeQuantity = Math.max(1, Math.floor(Number(quantity) || 1));
 
   if (exist) {
-    exist.quantity += quantity;
+    exist.quantity = Math.max(1, Number(exist.quantity) || 1) + safeQuantity;
   } else {
     cart.push({
       id: product.id,
@@ -39,11 +40,29 @@ export function addToCart(product, quantity = 1) {
       slug: product.slug,
       hinh_anh_url: product.hinh_anh_url,
       price: getPrice(product),
-      quantity,
+      quantity: safeQuantity,
     });
   }
 
   saveCart(cart);
+}
+
+export function updateCartQuantity(productId, quantity) {
+  const safeQuantity = Math.floor(Number(quantity));
+  if (!Number.isFinite(safeQuantity) || safeQuantity < 1) return;
+
+  const cart = getCart().map((item) =>
+    item.id === productId ? { ...item, quantity: safeQuantity } : item,
+  );
+  saveCart(cart);
+}
+
+export function removeFromCart(productId) {
+  saveCart(getCart().filter((item) => item.id !== productId));
+}
+
+export function clearCart() {
+  saveCart([]);
 }
 
 // Tổng số món trong giỏ (hiện trên Header)
