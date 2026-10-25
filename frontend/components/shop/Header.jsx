@@ -4,16 +4,20 @@
 // THANH MENU TRÊN CÙNG của khu vực cửa hàng (hiện ở mọi trang trong (shop))
 //   - Logo + các link: Trang chủ, Sản phẩm
 //   - Ô tìm kiếm: gõ xong bấm Enter -> sang /products?keyword=...
-//   - Giỏ hàng (có số lượng) và Đăng nhập
+//   - Giỏ hàng (có số lượng)
+//   - Chưa đăng nhập: link Đăng nhập / Đăng ký
+//     Đã đăng nhập  : hiện tên người dùng + nút Đăng xuất
 // =====================================================================
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getCartCount } from "@/utils/cartHelper";
+import { logout, useCurrentUser } from "@/lib/auth";
 
 export default function Header() {
   const router = useRouter();
+  const user = useCurrentUser(); // null = chưa đăng nhập
   const [keyword, setKeyword] = useState("");
   const [cartCount, setCartCount] = useState(0);
 
@@ -34,6 +38,12 @@ export default function Header() {
   const handleSearch = (e) => {
     e.preventDefault();
     router.push(`/products?keyword=${encodeURIComponent(keyword.trim())}`);
+  };
+
+  // Bấm Đăng xuất
+  const handleLogout = async () => {
+    await logout();
+    router.push("/");
   };
 
   return (
@@ -64,7 +74,7 @@ export default function Header() {
           />
         </form>
 
-        {/* Giỏ hàng + Đăng nhập */}
+        {/* Giỏ hàng + Tài khoản */}
         <div className="ml-auto flex items-center gap-5 text-sm font-medium text-slate-700 sm:ml-0">
           <Link href="/cart" className="relative hover:text-blue-600">
             🛒 Giỏ hàng
@@ -74,9 +84,31 @@ export default function Header() {
               </span>
             )}
           </Link>
-          <Link href="/login" className="hover:text-blue-600">
-            Đăng nhập
-          </Link>
+
+          {user ? (
+            <>
+              <Link href="/profile" className="hover:text-blue-600">
+                👤 {user.ho_ten || user.username}
+              </Link>
+              {user.vai_tro === "admin" && (
+                <Link href="/admin" className="hover:text-blue-600">
+                  Quản trị
+                </Link>
+              )}
+              <button type="button" onClick={handleLogout} className="hover:text-blue-600">
+                Đăng xuất
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/login" className="hover:text-blue-600">
+                Đăng nhập
+              </Link>
+              <Link href="/register" className="hover:text-blue-600">
+                Đăng ký
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>

@@ -29,6 +29,8 @@ Route::post('/auth/quen-mat-khau', [AuthController::class, 'forgotPassword']);
 Route::post('/auth/dat-lai-mat-khau', [AuthController::class, 'resetPassword']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
+    Route::put('/auth/me', [AuthController::class, 'updateProfile']);
+    Route::put('/auth/doi-mat-khau', [AuthController::class, 'changePassword']);
     Route::post('/auth/dang-xuat', [AuthController::class, 'logout']);
 });
 

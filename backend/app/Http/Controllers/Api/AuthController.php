@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DangKyRequest;
+use App\Http\Requests\CapNhatHoSoRequest;
 use App\Http\Requests\DangNhapRequest;
+use App\Http\Requests\DoiMatKhauRequest;
 use App\Http\Requests\DatLaiMatKhauRequest;
 use App\Http\Requests\YeuCauDatLaiMatKhauRequest;
 use App\Models\DatLaiMatKhau;
@@ -56,6 +58,43 @@ class AuthController extends Controller
     public function me(Request $request): JsonResponse
     {
         return response()->json($request->user());
+    }
+
+    // Sửa hồ sơ: họ tên, email, số điện thoại, địa chỉ (username không cho đổi)
+    public function updateProfile(CapNhatHoSoRequest $request): JsonResponse
+    {
+        $user = $request->user();
+        $user->update($request->validated());
+
+        return response()->json([
+            'message' => 'Cập nhật hồ sơ thành công',
+            'user' => $user->fresh(),
+        ]);
+    }
+
+    // Đổi mật khẩu: phải nhập đúng mật khẩu hiện tại
+    public function changePassword(DoiMatKhauRequest $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if (!Hash::check($request->mat_khau_hien_tai, $user->password)) {
+            return response()->json([
+                'message' => 'Mật khẩu hiện tại không đúng',
+                'errors' => ['mat_khau_hien_tai' => ['Mật khẩu hiện tại không đúng']],
+            ], 422);
+        }
+
+        $user->update(['password' => Hash::make($request->password)]);
+
+        // Đăng xuất các thiết bị khác, chỉ giữ lại phiên đang dùng
+        $currentId = $user->currentAccessToken()?->id;
+        $otherTokens = $user->tokens();
+        if ($currentId) {
+            $otherTokens->where('id', '!=', $currentId);
+        }
+        $otherTokens->delete();
+
+        return response()->json(['message' => 'Đổi mật khẩu thành công']);
     }
 
     public function logout(Request $request): JsonResponse
