@@ -49,6 +49,7 @@ Route::delete('/thuong-hieu/{thuongHieu}', [ThuongHieuController::class, 'destro
 // ===================== SẢN PHẨM =====================
 Route::get('/san-pham', [SanPhamController::class, 'index']);
 Route::post('/san-pham', [SanPhamController::class, 'store']);
+Route::get('/san-pham/{identifier}/lien-quan', [SanPhamController::class, 'related']);
 Route::get('/san-pham/{slug}', [SanPhamController::class, 'show']);
 Route::put('/san-pham/{sanPham}', [SanPhamController::class, 'update']);
 Route::post('/san-pham/{sanPham}', [SanPhamController::class, 'update']);

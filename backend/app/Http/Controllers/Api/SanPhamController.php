@@ -55,6 +55,39 @@ class SanPhamController extends Controller
         return new SanPhamResource($sanPham);
     }
 
+    // GET /api/san-pham/{identifier}/lien-quan?limit=4
+    // identifier nhận ID hoặc slug; kết quả cùng danh mục, không gồm chính sản phẩm.
+    public function related(Request $request, string $identifier): AnonymousResourceCollection
+    {
+        $sanPham = ctype_digit($identifier)
+            ? SanPham::find($identifier)
+            : null;
+
+        if (!$sanPham) {
+            $sanPham = SanPham::where('slug', $identifier)->firstOrFail();
+        }
+
+        if ($sanPham->danh_muc_id === null) {
+            return SanPhamResource::collection(collect());
+        }
+
+        $limit = max(1, min((int) $request->query('limit', 4), 12));
+
+        $query = SanPham::query()
+            ->where('status', 1)
+            ->where('danh_muc_id', $sanPham->danh_muc_id)
+            ->where('id', '!=', $sanPham->id)
+            ->with(['danhMuc', 'thuongHieu', 'hinhAnhs']);
+
+        if ($sanPham->thuong_hieu_id !== null) {
+            $query->orderByRaw('CASE WHEN thuong_hieu_id = ? THEN 0 ELSE 1 END', [$sanPham->thuong_hieu_id]);
+        }
+
+        $relatedProducts = $query->orderByDesc('id')->limit($limit)->get();
+
+        return SanPhamResource::collection($relatedProducts);
+    }
+
     // POST /api/san-pham
     // multipart/form-data:
     //   hinh_anh      -> 1 file (ảnh đại diện)
