@@ -1,42 +1,13 @@
 "use client";
 
-import { useMemo, useSyncExternalStore } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { mediaUrl, money } from "@/lib/format";
 import { clearCart, removeFromCart, updateCartQuantity } from "@/utils/cartHelper";
-
-function subscribeToCart(onChange) {
-  window.addEventListener("cartUpdated", onChange);
-  window.addEventListener("storage", onChange);
-  return () => {
-    window.removeEventListener("cartUpdated", onChange);
-    window.removeEventListener("storage", onChange);
-  };
-}
-
-function getCartSnapshot() {
-  return window.localStorage.getItem("cart") || "[]";
-}
-
-function getServerCartSnapshot() {
-  return "[]";
-}
+import { useCart } from "@/utils/useCart";
 
 export default function CartPage() {
-  const snapshot = useSyncExternalStore(subscribeToCart, getCartSnapshot, getServerCartSnapshot);
-  const items = useMemo(() => {
-    try {
-      const parsed = JSON.parse(snapshot);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
-  }, [snapshot]);
-  const total = useMemo(
-    () => items.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 0), 0),
-    [items],
-  );
+  const { items, total } = useCart();
 
   return (
     <section className="mx-auto min-h-72 max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
@@ -88,7 +59,12 @@ export default function CartPage() {
 
           <div className="mt-6 flex flex-col items-stretch justify-between gap-4 rounded-xl bg-slate-50 p-5 sm:flex-row sm:items-center">
             <Link href="/products" className="text-sm font-medium text-blue-700 hover:underline">← Tiếp tục mua sắm</Link>
-            <p className="text-lg font-bold text-slate-900">Tạm tính: {money(total)}</p>
+            <div className="flex flex-col items-stretch gap-3 sm:items-end">
+              <p className="text-lg font-bold text-slate-900">Tạm tính: {money(total)}</p>
+              <Link href="/checkout" className="rounded-lg bg-blue-600 px-6 py-3 text-center font-semibold text-white hover:bg-blue-700">
+                Tiến hành thanh toán
+              </Link>
+            </div>
           </div>
         </>
       )}

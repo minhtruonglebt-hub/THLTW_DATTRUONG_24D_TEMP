@@ -92,7 +92,24 @@ export const RESOURCES: Resource[] = [
             .join(", ") || "—",
       },
       { label: "Tổng tiền", render: (row) => money(row.tong_tien) },
-      { label: "Thanh toán", render: text("phuong_thuc_thanh_toan") },
+      {
+        label: "Thanh toán",
+        render: (row) => {
+          const method = { cod: "COD", momo: "MoMo", momo_qr: "MoMo QR" }[row.phuong_thuc_thanh_toan as string] ?? row.phuong_thuc_thanh_toan ?? "—";
+          const paid = row.trang_thai_thanh_toan === "da_thanh_toan";
+          const waiting = row.trang_thai_thanh_toan === "cho_shop_xac_nhan";
+          return (
+            <span>
+              {method}
+              {row.phuong_thuc_thanh_toan !== "cod" && (
+                <span className={paid ? " font-semibold text-emerald-700" : waiting ? " font-semibold text-blue-700" : " text-amber-700"}>
+                  {paid ? " · Đã trả" : waiting ? " · Khách báo đã chuyển" : " · Chưa trả"}
+                </span>
+              )}
+            </span>
+          );
+        },
+      },
       { label: "Tài khoản", render: (row) => row.nguoi_dung_id ?? "Khách" },
       { label: "Trạng thái", render: orderStatus },
       { label: "Ngày đặt", render: (row) => date(row.created_at) },

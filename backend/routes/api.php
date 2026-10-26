@@ -74,6 +74,13 @@ Route::post('/don-hang', [DonHangController::class, 'store']);
 Route::get('/don-hang/{donHang}', [DonHangController::class, 'show']);
 Route::post('/don-hang/{donHang}/huy', [DonHangController::class, 'cancel']);
 
+// ===================== THANH TOÁN MOMO =====================
+Route::post('/don-hang/{donHang}/momo', [DonHangController::class, 'taoThanhToanMomo']);          // tạo / tạo lại mã QR
+Route::get('/don-hang/{donHang}/momo/trang-thai', [DonHangController::class, 'trangThaiMomo']);   // hỏi MoMo đã trả tiền chưa
+Route::post('/momo/ipn', [DonHangController::class, 'momoIpn']);
+Route::post('/don-hang/{donHang}/da-chuyen-khoan', [DonHangController::class, 'baoDaChuyenKhoan']);     // khách bấm "Tôi đã chuyển khoản" (QR cá nhân)
+Route::post('/don-hang/{donHang}/xac-nhan-thanh-toan', [DonHangController::class, 'xacNhanThanhToan']); // CHỈ ADMIN: xác nhận đã nhận tiền                                  // MoMo gọi về (không cần đăng nhập)
+
 
 // ===================== ADMIN (chỉ đọc) =====================
 Route::prefix('admin')->group(function () {

@@ -31,4 +31,20 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    // Mặc định là SANDBOX (khoá test công khai của MoMo, không mất tiền thật).
+    // Muốn chạy tiền thật: điền khoá của tài khoản MoMo Business vào file .env
+    'momo' => [
+        'endpoint' => env('MOMO_ENDPOINT', 'https://test-payment.momo.vn'),
+        'partner_code' => env('MOMO_PARTNER_CODE', 'MOMO'),
+        'access_key' => env('MOMO_ACCESS_KEY', 'F8BBA842ECF85'),
+        'secret_key' => env('MOMO_SECRET_KEY', 'K951B6PE1waDMi640xX08PD3vg6EkVlz'),
+        'frontend_url' => env('FRONTEND_URL', 'http://localhost:3000'),
+        // IPN cần địa chỉ public (ngrok). Không có thì bỏ trống: web vẫn tự hỏi MoMo kết quả.
+        'ipn_url' => env('MOMO_IPN_URL', ''),
+        // --- Nhận tiền vào MoMo cá nhân bằng mã QR (xem MomoQrService) ---
+        'nhan_ten' => env('MOMO_NHAN_TEN', ''),
+        'nhan_sdt' => env('MOMO_NHAN_SDT', ''),
+        'qr_tinh' => env('MOMO_QR_TINH', ''),
+    ],
+
 ];
