@@ -27,6 +27,16 @@ export default function Footer() {
               </Link>
             </li>
             <li>
+              <Link href="/posts" className="hover:text-white">
+                Bài viết
+              </Link>
+            </li>
+            <li>
+              <Link href="/contact" className="hover:text-white">
+                Liên hệ
+              </Link>
+            </li>
+            <li>
               <Link href="/cart" className="hover:text-white">
                 Giỏ hàng
               </Link>

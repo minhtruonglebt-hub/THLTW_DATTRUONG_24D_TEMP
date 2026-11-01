@@ -61,4 +61,13 @@ class SanPham extends Model
     {
         return $this->hasMany(ChiTietPhieuKho::class, 'san_pham_id');
     }
+
+    /** Giá khách phải trả: có khuyến mãi hợp lệ (0 < KM < giá gốc) thì lấy KM — khớp với priceHelper.js ở frontend. */
+    public function giaBan(): float
+    {
+        $km = (float) $this->gia_khuyen_mai;
+        $gia = (float) $this->gia;
+
+        return ($km > 0 && $km < $gia) ? $km : $gia;
+    }
 }

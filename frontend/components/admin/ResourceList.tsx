@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { API, callApi, useList, type Row } from "@/lib/api";
 import { RESOURCES } from "@/lib/admin-config";
+import { getToken } from "@/lib/auth";
 import Notice from "@/components/Notice";
 import PageHeader from "@/components/PageHeader";
 import RowActions from "@/components/RowActions";
@@ -46,11 +47,23 @@ export default function ResourceList({ resourceKey, editPath }: ResourceListProp
     }
   }
 
+  async function confirmPayment(row: Row) {
+    if (!confirm(`Bạn đã thấy tiền của đơn ${row.ma_don_hang} trong MoMo?`)) return;
+
+    try {
+      await callApi(`${API}/don-hang/${row.id}/xac-nhan-thanh-toan`, { method: "POST" }, getToken() ?? undefined);
+      setNotice({ text: "Đã xác nhận thanh toán", ok: true });
+      reload();
+    } catch (cause) {
+      setNotice({ text: cause instanceof Error ? cause.message : "Không xác nhận được thanh toán.", ok: false });
+    }
+  }
+
   async function cancelOrder(row: Row) {
     if (!confirm(`Huỷ đơn ${row.ma_don_hang}?`)) return;
 
     try {
-      await callApi(`${API}/don-hang/${row.id}/huy`, { method: "POST" });
+      await callApi(`${API}/don-hang/${row.id}/huy`, { method: "POST" }, getToken() ?? undefined);
       setNotice({ text: "Đã huỷ đơn", ok: true });
       reload();
     } catch (cause) {
@@ -106,6 +119,15 @@ export default function ResourceList({ resourceKey, editPath }: ResourceListProp
                       onEdit={() => router.push(`/admin/${editPath}/${row.id}`)}
                       onDelete={() => void deleteRow(row)}
                     />
+                  )}
+                  {resource.key === "don-hang" && row.phuong_thuc_thanh_toan === "momo_qr" && row.trang_thai !== "da_huy" && row.trang_thai_thanh_toan !== "da_thanh_toan" && (
+                    <button
+                      type="button"
+                      onClick={() => void confirmPayment(row)}
+                      className="mr-2 rounded-md bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-100"
+                    >
+                      Đã nhận tiền
+                    </button>
                   )}
                   {resource.key === "don-hang" && row.trang_thai === "cho_xac_nhan" && (
                     <button

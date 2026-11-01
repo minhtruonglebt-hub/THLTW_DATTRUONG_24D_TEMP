@@ -58,8 +58,8 @@ export default function ShopHomePage() {
   }, []);
 
   const handleAddToCart = (product) => {
-    addToCart(product);
-    alert("Đã thêm vào giỏ hàng");
+    const result = addToCart(product);
+    alert(result.message); // "HẾT HÀNG" nếu kho < 1
   };
 
   // Danh sách 4 khối cần hiển thị (để khỏi viết lặp lại 4 lần)

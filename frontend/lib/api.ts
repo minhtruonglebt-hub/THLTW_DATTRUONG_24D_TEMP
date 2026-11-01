@@ -40,7 +40,16 @@ function getErrorMessage(json: Row): string {
 export async function callApi(url: string, options: RequestInit, token?: string): Promise<Row> {
   const headers = new Headers(options.headers);
   headers.set("Accept", "application/json");
-  if (token) headers.set("Authorization", `Bearer ${token}`);
+  // Không truyền token thì tự lấy token đăng nhập (admin cần để thêm/sửa/xoá)
+  let authToken = token;
+  if (!authToken && typeof window !== "undefined") {
+    try {
+      authToken = localStorage.getItem("auth_token") ?? undefined;
+    } catch {
+      // trình duyệt chặn localStorage thì bỏ qua
+    }
+  }
+  if (authToken) headers.set("Authorization", `Bearer ${authToken}`);
 
   let response: Response;
   try {

@@ -1,10 +1,12 @@
 <?php
 
-use App\Http\Controllers\Api\DanhMucController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BaiVietController;
+use App\Http\Controllers\Api\DanhMucController;
 use App\Http\Controllers\Api\DonHangController;
 use App\Http\Controllers\Api\GioHangController;
 use App\Http\Controllers\Api\HinhAnhSanPhamController;
+use App\Http\Controllers\Api\LienHeController;
 use App\Http\Controllers\Api\SanPhamController;
 use App\Http\Controllers\Api\ThuongHieuController;
 use Illuminate\Http\Request;
@@ -29,6 +31,8 @@ Route::post('/auth/quen-mat-khau', [AuthController::class, 'forgotPassword']);
 Route::post('/auth/dat-lai-mat-khau', [AuthController::class, 'resetPassword']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
+    Route::put('/auth/me', [AuthController::class, 'updateProfile']);
+    Route::put('/auth/doi-mat-khau', [AuthController::class, 'changePassword']);
     Route::post('/auth/dang-xuat', [AuthController::class, 'logout']);
 });
 
@@ -72,6 +76,18 @@ Route::post('/don-hang', [DonHangController::class, 'store']);
 Route::get('/don-hang/{donHang}', [DonHangController::class, 'show']);
 Route::post('/don-hang/{donHang}/huy', [DonHangController::class, 'cancel']);
 
+// ===================== THANH TOÁN MOMO =====================
+Route::post('/don-hang/{donHang}/momo', [DonHangController::class, 'taoThanhToanMomo']);          // tạo / tạo lại mã QR
+Route::get('/don-hang/{donHang}/momo/trang-thai', [DonHangController::class, 'trangThaiMomo']);   // hỏi MoMo đã trả tiền chưa
+Route::post('/momo/ipn', [DonHangController::class, 'momoIpn']);                                  // MoMo gọi về (không cần đăng nhập)
+Route::post('/don-hang/{donHang}/da-chuyen-khoan', [DonHangController::class, 'baoDaChuyenKhoan']);     // khách bấm "Tôi đã chuyển khoản" (QR cá nhân)
+Route::post('/don-hang/{donHang}/xac-nhan-thanh-toan', [DonHangController::class, 'xacNhanThanhToan']); // CHỈ ADMIN: xác nhận đã nhận tiền
+
+// ===================== BÀI VIẾT & LIÊN HỆ (công khai) =====================
+Route::get('/chu-de-bai-viet', [BaiVietController::class, 'chuDe']);
+Route::get('/bai-viet', [BaiVietController::class, 'index']);
+Route::get('/bai-viet/{slug}', [BaiVietController::class, 'show']);
+Route::post('/lien-he', [LienHeController::class, 'store'])->middleware('throttle:5,1'); // tối đa 5 lần / phút / người
 
 // ===================== ADMIN (chỉ đọc) =====================
 Route::prefix('admin')->group(function () {

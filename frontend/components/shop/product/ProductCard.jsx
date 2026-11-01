@@ -7,6 +7,7 @@
 // =====================================================================
 
 import Link from "next/link";
+import Image from "next/image";
 import { money, mediaUrl } from "@/lib/format";
 import { isOnSale, getPrice, getDiscountPercent } from "@/utils/priceHelper";
 
@@ -19,10 +20,13 @@ export default function ProductCard({ product, onAddToCart }) {
       {/* Ảnh sản phẩm (bấm vào để xem chi tiết) */}
       <Link href={`/products/${product.slug}`} className="relative block aspect-square bg-slate-50">
         {imageUrl ? (
-          <img
+          <Image
             src={imageUrl}
             alt={product.ten_san_pham}
-            className="h-full w-full object-cover transition group-hover:scale-105"
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            unoptimized
+            className="object-cover transition group-hover:scale-105"
           />
         ) : (
           <div className="flex h-full items-center justify-center text-sm text-slate-400">Chưa có ảnh</div>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Services\MomoQrService;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class DonHangResource extends JsonResource
@@ -18,9 +19,37 @@ class DonHangResource extends JsonResource
             'tong_tien' => $this->tong_tien,
             'phuong_thuc_thanh_toan' => $this->phuong_thuc_thanh_toan,
             'trang_thai' => $this->trang_thai,
+            'trang_thai_thanh_toan' => $this->trang_thai_thanh_toan,
+            'paid_at' => $this->paid_at,
+            // Thông tin để khách thanh toán (null khi không cần: COD / đã trả / đã huỷ)
+            'thanh_toan' => $this->thongTinThanhToan(),
             'chi_tiets' => ChiTietDonHangResource::collection($this->whenLoaded('chiTiets')),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
+    }
+
+    private function thongTinThanhToan(): ?array
+    {
+        if ($this->trang_thai_thanh_toan === 'da_thanh_toan' || $this->trang_thai === 'da_huy') {
+            return null;
+        }
+
+        if ($this->phuong_thuc_thanh_toan === 'momo') {
+            return ['loai' => 'cong', 'pay_url' => $this->momo_pay_url, 'qr_code' => $this->momo_qr_code];
+        }
+
+        if ($this->phuong_thuc_thanh_toan === 'momo_qr') {
+            return [
+                'loai' => 'qr',
+                'qr_content' => app(MomoQrService::class)->taoNoiDung($this->resource), // null nếu shop chưa cấu hình QR
+                'so_tien' => (int) round((float) $this->tong_tien),
+                'noi_dung' => $this->ma_don_hang,
+                'ten' => config('services.momo.nhan_ten'),
+                'sdt' => config('services.momo.nhan_sdt'),
+            ];
+        }
+
+        return null;
     }
 }

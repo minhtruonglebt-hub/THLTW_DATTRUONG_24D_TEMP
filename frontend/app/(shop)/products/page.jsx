@@ -112,8 +112,8 @@ function ProductsContent() {
   };
 
   const handleAddToCart = (product) => {
-    addToCart(product);
-    alert("Đã thêm vào giỏ hàng");
+    const result = addToCart(product);
+    alert(result.message); // "HẾT HÀNG" nếu kho < 1
   };
 
   // ---------- 3. Lọc danh sách ----------
