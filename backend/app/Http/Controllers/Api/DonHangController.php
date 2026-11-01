@@ -58,8 +58,14 @@ class DonHangController extends Controller
             $chiTiets = [];
             foreach ($dong as $sanPhamId => $soLuong) {
                 $sanPham = $sanPhams->get($sanPhamId);
-                if (!$sanPham || !$sanPham->status || $soLuong > $sanPham->so_luong) {
-                    abort(422, 'Sản phẩm không đủ số lượng trong kho: '.($sanPham?->ten_san_pham ?? 'không tồn tại'));
+                if (!$sanPham || !$sanPham->status) {
+                    abort(422, 'Sản phẩm không tồn tại: '.($sanPham?->ten_san_pham ?? 'không tồn tại'));
+                }
+                if ($sanPham->so_luong < 1) {
+                    abort(422, 'HẾT HÀNG: '.$sanPham->ten_san_pham);
+                }
+                if ($soLuong > $sanPham->so_luong) {
+                    abort(422, 'Sản phẩm không đủ số lượng trong kho: '.$sanPham->ten_san_pham.' (còn '.$sanPham->so_luong.')');
                 }
                 $donGia = $sanPham->giaBan();
                 $tongTien += $donGia * $soLuong;

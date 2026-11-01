@@ -109,7 +109,7 @@ class AuthController extends Controller
         $user = User::where('email', $request->email)->where('status', 1)->first();
 
         if (!$user) {
-            return response()->json(['message' => 'Nếu email tồn tại, mã đặt lại mật khẩu đã được tạo']);
+            return response()->json(['message' => 'Nếu email tồn tại, mã đặt lại mật khẩu đã được gửi']);
         }
 
         DatLaiMatKhau::where('nguoi_dung_id', $user->id)->where('da_su_dung', false)->update(['da_su_dung' => true]);
@@ -122,10 +122,24 @@ class AuthController extends Controller
             'created_at' => now(),
         ]);
 
-        return response()->json([
-            'message' => 'Mã đặt lại mật khẩu đã được tạo',
-            'token' => $token,
-        ]);
+        // Gửi mã qua email cho chủ tài khoản (không bao giờ trả mã trong phản hồi ở môi trường thật)
+        try {
+            \Illuminate\Support\Facades\Mail::raw(
+                "Mã đặt lại mật khẩu của bạn: {$token}\nMã có hiệu lực 60 phút. Nếu không phải bạn yêu cầu, hãy bỏ qua email này.",
+                fn ($m) => $m->to($user->email)->subject('Đặt lại mật khẩu')
+            );
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Không gửi được email đặt lại mật khẩu: '.$e->getMessage());
+        }
+
+        $body = ['message' => 'Nếu email tồn tại, mã đặt lại mật khẩu đã được gửi'];
+
+        // Chỉ khi chạy local + APP_DEBUG=true mới trả mã để tiện test bằng Postman
+        if (config('app.debug') && app()->environment('local')) {
+            $body['token'] = $token;
+        }
+
+        return response()->json($body);
     }
 
     public function resetPassword(DatLaiMatKhauRequest $request): JsonResponse

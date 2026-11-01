@@ -91,8 +91,8 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = () => {
     if (!product) return;
-    addToCart(product, quantity);
-    alert(`Đã thêm ${quantity} sản phẩm vào giỏ hàng`);
+    const result = addToCart(product, quantity);
+    alert(result.ok ? `Đã thêm ${quantity} sản phẩm vào giỏ hàng` : result.message);
   };
 
   if (loading || loadedSlug !== slug) {
@@ -172,8 +172,18 @@ export default function ProductDetailPage() {
           </div>
 
           <p className={`mt-4 text-sm font-medium ${stock > 0 ? "text-emerald-700" : "text-red-600"}`}>
-            {stock > 0 ? `Còn ${stock} sản phẩm` : "Sản phẩm hiện đã hết hàng"}
+            {stock > 0 ? `Còn ${stock} sản phẩm` : "HẾT HÀNG"}
           </p>
+
+          {stock < 1 && (
+            <button
+              type="button"
+              disabled
+              className="mt-5 cursor-not-allowed rounded-lg bg-slate-300 px-6 py-3 font-semibold text-white"
+            >
+              HẾT HÀNG
+            </button>
+          )}
 
           {stock > 0 && (
             <div className="mt-5 flex flex-wrap items-center gap-3">
@@ -235,8 +245,8 @@ export default function ProductDetailPage() {
           <ProductList
             products={relatedProducts}
             onAddToCart={(item) => {
-              addToCart(item);
-              alert("Đã thêm vào giỏ hàng");
+              const result = addToCart(item);
+              alert(result.message);
             }}
             gridClass="grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
           />

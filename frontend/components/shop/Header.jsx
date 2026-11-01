@@ -62,6 +62,12 @@ export default function Header() {
           <Link href="/products" className="hover:text-blue-600">
             Sản phẩm
           </Link>
+          <Link href="/posts" className="hover:text-blue-600">
+            Bài viết
+          </Link>
+          <Link href="/contact" className="hover:text-blue-600">
+            Liên hệ
+          </Link>
         </nav>
 
         {/* Tìm kiếm */}
