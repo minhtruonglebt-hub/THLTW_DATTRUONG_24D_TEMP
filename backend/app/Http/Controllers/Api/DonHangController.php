@@ -7,8 +7,10 @@ use App\Http\Requests\DatHangRequest;
 use App\Http\Resources\DonHangResource;
 use App\Models\DonHang;
 use App\Models\GioHang;
+use App\Models\KhuyenMai;
 use App\Models\SanPham;
 use App\Services\MomoService;
+use App\Services\KhuyenMaiService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -72,13 +74,24 @@ class DonHangController extends Controller
                 $chiTiets[] = [$sanPham, $soLuong, $donGia];
             }
 
+            $maKhuyenMai = trim((string) $request->input('ma_khuyen_mai', ''));
+            $tienGiam = 0;
+            if ($maKhuyenMai !== '') {
+                $promotion = app(KhuyenMaiService::class)->tinh($maKhuyenMai, $tongTien, true);
+                $maKhuyenMai = $promotion['khuyen_mai']->ma_khuyen_mai;
+                $tienGiam = $promotion['tien_giam'];
+                $promotion['khuyen_mai']->increment('da_su_dung');
+            }
+
             $donHang = DonHang::create([
                 'ma_don_hang' => 'DH'.now()->format('YmdHis').strtoupper(Str::random(4)),
                 'nguoi_dung_id' => $user?->id,
                 'ho_ten' => $request->ho_ten,
                 'so_dien_thoai' => $request->so_dien_thoai,
                 'dia_chi_giao_hang' => $request->dia_chi_giao_hang,
-                'tong_tien' => $tongTien,
+                'tong_tien' => $tongTien - $tienGiam,
+                'ma_khuyen_mai' => $maKhuyenMai ?: null,
+                'tien_giam' => $tienGiam,
                 'phuong_thuc_thanh_toan' => $phuongThuc,
                 'trang_thai' => 'cho_xac_nhan',
                 'trang_thai_thanh_toan' => in_array($phuongThuc, ['momo', 'momo_qr'], true) ? 'cho_thanh_toan' : 'chua_thanh_toan',
@@ -96,6 +109,14 @@ class DonHangController extends Controller
             }
 
             $gioHang?->chiTiets()->delete();
+
+            // Ghi mốc đầu tiên của lịch sử trạng thái đơn
+            $donHang->lichSus()->create([
+                'trang_thai_cu' => null,
+                'trang_thai_moi' => 'cho_xac_nhan',
+                'ghi_chu' => 'Khách đặt hàng',
+                'nguoi_thuc_hien_id' => $user?->id,
+            ]);
 
             return $donHang;
         });
@@ -130,8 +151,20 @@ class DonHangController extends Controller
             return response()->json(['message' => 'Đơn đã thanh toán hoặc đang chờ shop xác nhận tiền, vui lòng liên hệ shop'], 422);
         }
 
-        DB::transaction(function () use ($donHang) {
+        $nguoiHuy = $request->user('sanctum');
+        DB::transaction(function () use ($donHang, $nguoiHuy) {
             $donHang->update(['trang_thai' => 'da_huy']);
+            if ($donHang->ma_khuyen_mai) {
+                KhuyenMai::where('ma_khuyen_mai', $donHang->ma_khuyen_mai)
+                    ->where('da_su_dung', '>', 0)
+                    ->decrement('da_su_dung');
+            }
+            $donHang->lichSus()->create([
+                'trang_thai_cu' => 'cho_xac_nhan',
+                'trang_thai_moi' => 'da_huy',
+                'ghi_chu' => 'Khách tự hủy đơn',
+                'nguoi_thuc_hien_id' => $nguoiHuy?->id,
+            ]);
             // Trả hàng về kho
             foreach ($donHang->chiTiets as $ct) {
                 SanPham::where('id', $ct->san_pham_id)->increment('so_luong', $ct->so_luong);
@@ -322,7 +355,13 @@ class DonHangController extends Controller
                 $dong[$id] = ($dong[$id] ?? 0) + (int) $item['so_luong'];
             }
 
-            return [$dong, null];
+            $sessionId = $request->input('session_id', $request->header('X-Session-Id'));
+            $gioHang = GioHang::where(
+                $user ? 'nguoi_dung_id' : 'session_id',
+                $user ? $user->id : $sessionId
+            )->first();
+
+            return [$dong, $gioHang];
         }
 
         $sessionId = $request->input('session_id', $request->header('X-Session-Id'));

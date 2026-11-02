@@ -23,6 +23,7 @@ class DatHangRequest extends FormRequest
             'items.*.san_pham_id' => 'required_with:items|integer|exists:san_pham,id',
             'items.*.so_luong' => 'required_with:items|integer|min:1|max:999',
             'session_id' => 'nullable|string|max:255',
+            'ma_khuyen_mai' => 'nullable|string|max:50',
         ];
     }
 }

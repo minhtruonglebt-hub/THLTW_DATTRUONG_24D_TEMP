@@ -22,7 +22,9 @@ export function mediaUrl(value: unknown): string | undefined {
 
   try {
     const apiOrigin = new URL(API).origin;
-    const url = new URL(value, `${apiOrigin}/`);
+    const usesPublicStorage = ["bai-viet/", "banner/", "website/"].some((prefix) => value.startsWith(prefix));
+    const path = usesPublicStorage ? `storage/${value}` : value;
+    const url = new URL(path, `${apiOrigin}/`);
     const isLocalHost = (host: string) => ["localhost", "127.0.0.1", "::1"].includes(host);
 
     if (isLocalHost(url.hostname) && isLocalHost(new URL(apiOrigin).hostname)) {

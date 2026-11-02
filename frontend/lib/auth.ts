@@ -204,3 +204,21 @@ export async function changePassword(data: Record<string, string>): Promise<stri
   );
   return json.message;
 }
+
+export async function requestPasswordReset(email: string): Promise<string> {
+  const json = await callApi(`${API}/auth/quen-mat-khau`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  return json.message;
+}
+
+export async function resetPassword(data: Record<string, string>): Promise<string> {
+  const json = await callApi(`${API}/auth/dat-lai-mat-khau`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return json.message;
+}

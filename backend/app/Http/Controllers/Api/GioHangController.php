@@ -82,7 +82,7 @@ class GioHangController extends Controller
 
     private function layGioHang(Request $request): GioHang
     {
-        $userId = $request->user()?->id;
+        $userId = $request->user('sanctum')?->id;
         $sessionId = $request->input('session_id', $request->header('X-Session-Id'));
 
         if (!$userId && !$sessionId) {

@@ -181,8 +181,16 @@ CREATE TABLE `don_hang` (
   `so_dien_thoai` varchar(20) NOT NULL,
   `dia_chi_giao_hang` varchar(500) NOT NULL,
   `tong_tien` decimal(15,2) NOT NULL DEFAULT 0.00,
+  `ma_khuyen_mai` varchar(50) DEFAULT NULL,
+  `tien_giam` decimal(15,2) NOT NULL DEFAULT 0.00,
   `phuong_thuc_thanh_toan` varchar(50) DEFAULT NULL,
   `trang_thai` enum('cho_xac_nhan','da_xac_nhan','dang_giao','hoan_tat','da_huy') DEFAULT 'cho_xac_nhan',
+  `trang_thai_thanh_toan` varchar(50) NOT NULL DEFAULT 'cho_thanh_toan',
+  `momo_order_id` varchar(100) DEFAULT NULL,
+  `momo_trans_id` varchar(100) DEFAULT NULL,
+  `momo_pay_url` text DEFAULT NULL,
+  `momo_qr_code` mediumtext DEFAULT NULL,
+  `paid_at` datetime DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

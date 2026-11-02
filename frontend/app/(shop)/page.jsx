@@ -18,6 +18,9 @@ import { getProducts } from "@/services/productServices";
 import { isOnSale } from "@/utils/priceHelper";
 import { addToCart } from "@/utils/cartHelper";
 import ProductList from "@/components/shop/product/ProductList";
+import Image from "next/image";
+import { API, callApi } from "@/lib/api";
+import { mediaUrl } from "@/lib/format";
 
 export default function ShopHomePage() {
   const [newProducts, setNewProducts] = useState([]);
@@ -26,6 +29,7 @@ export default function ShopHomePage() {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [banner, setBanner] = useState(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -57,8 +61,16 @@ export default function ShopHomePage() {
     fetchProducts();
   }, []);
 
-  const handleAddToCart = (product) => {
-    const result = addToCart(product);
+  useEffect(() => {
+    let active = true;
+    callApi(`${API}/banner`, { cache: "no-store" })
+      .then((json) => active && setBanner((json.data ?? [])[0] ?? null))
+      .catch(() => active && setBanner(null));
+    return () => { active = false; };
+  }, []);
+
+  const handleAddToCart = async (product) => {
+    const result = await addToCart(product);
     alert(result.message); // "HẾT HÀNG" nếu kho < 1
   };
 
@@ -71,28 +83,32 @@ export default function ShopHomePage() {
   ];
 
   return (
-    <div>
+    <div className="pb-4">
       {/* ---------- Banner ---------- */}
-      <section className="mx-auto mt-6 max-w-7xl px-6">
-        <div className="rounded-3xl bg-linear-to-r from-blue-700 to-sky-500 px-8 py-16 text-white sm:px-16 sm:py-24">
-          <p className="text-sm font-semibold uppercase tracking-widest text-sky-100">Bộ sưu tập mới</p>
-          <h1 className="mt-3 max-w-xl text-4xl font-bold leading-tight sm:text-5xl">
-            Mua sắm dễ dàng, giá tốt mỗi ngày
-          </h1>
-          <p className="mt-4 max-w-lg text-sky-100">
-            Hàng ngàn sản phẩm chính hãng, giao nhanh tận nơi, đổi trả dễ dàng.
-          </p>
-          <Link
-            href="/products"
-            className="mt-8 inline-block rounded-full bg-white px-8 py-3 font-semibold text-blue-700 transition hover:bg-sky-50"
-          >
-            Mua ngay →
-          </Link>
-        </div>
+      <section className="mx-auto mt-5 max-w-7xl px-4 sm:mt-8 sm:px-6">
+        <Link href={banner?.lien_ket || "/products"} className="group relative isolate block min-h-[390px] overflow-hidden rounded-[2rem] bg-gradient-to-br from-slate-950 via-blue-950 to-blue-700 px-6 py-12 text-white shadow-2xl shadow-blue-950/15 sm:min-h-[440px] sm:px-12 sm:py-16 lg:px-16">
+          {banner?.hinh_anh && <Image src={mediaUrl(banner.hinh_anh)} alt={banner.tieu_de || "Banner cửa hàng"} fill priority unoptimized className="object-cover" />}
+          <div className="absolute inset-0 -z-10 overflow-hidden">
+            <div className="absolute -right-20 -top-32 h-96 w-96 rounded-full bg-blue-400/25 blur-3xl transition duration-700 group-hover:scale-125" />
+            <div className="absolute -bottom-48 right-1/4 h-96 w-96 rounded-full bg-cyan-300/15 blur-3xl" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_30%,rgba(255,255,255,0.12),transparent_35%)]" />
+          </div>
+          <div className="relative z-10 flex min-h-[300px] max-w-3xl flex-col items-start justify-center sm:min-h-[330px]">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-blue-100 backdrop-blur">
+              <span className="h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_12px_rgba(103,232,249,0.9)]" />Bộ sưu tập mới
+            </span>
+            <h1 className="mt-6 max-w-2xl text-4xl font-black leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">{banner?.tieu_de || "Công nghệ tốt hơn. Mỗi ngày."}</h1>
+            <p className="mt-5 max-w-xl text-base leading-7 text-blue-100/90 sm:text-lg">Khám phá sản phẩm chính hãng, mức giá tốt và trải nghiệm mua sắm dễ dàng cho mọi nhu cầu.</p>
+            <span className="mt-8 inline-flex items-center gap-3 rounded-2xl bg-white px-6 py-3.5 text-sm font-bold text-slate-950 shadow-xl shadow-black/10 transition group-hover:-translate-y-0.5 group-hover:bg-blue-50">Khám phá sản phẩm <span aria-hidden="true">→</span></span>
+          </div>
+          <div className="absolute bottom-8 right-8 hidden rounded-2xl border border-white/15 bg-white/10 p-4 text-right backdrop-blur-md sm:block">
+            <p className="text-2xl font-black">Chính hãng</p><p className="mt-1 text-xs text-blue-100">An tâm lựa chọn</p>
+          </div>
+        </Link>
       </section>
 
       {/* ---------- Các nhóm sản phẩm ---------- */}
-      <div className="mx-auto max-w-7xl space-y-10 px-6 py-10">
+      <div className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 sm:py-14">
         {loading && <p className="text-center text-slate-500">Đang tải sản phẩm...</p>}
 
         {error && <p className="rounded-lg bg-red-50 p-3 text-center text-sm text-red-700">{error}</p>}
@@ -100,18 +116,18 @@ export default function ShopHomePage() {
         {!loading &&
           !error &&
           sections.map((section) => (
-            <section key={section.label} className="rounded-3xl bg-white p-6 shadow-sm">
-              <div className="mb-6 flex items-end justify-between">
+            <section key={section.label} className="rounded-[2rem] border border-slate-200/70 bg-white p-5 shadow-[0_12px_40px_-34px_rgba(15,23,42,0.45)] sm:p-8">
+              <div className="mb-7 flex items-end justify-between gap-4">
                 <div>
-                  <span className={`text-sm font-semibold uppercase tracking-wider ${section.color}`}>
+                  <span className={`text-[11px] font-extrabold uppercase tracking-[0.2em] ${section.color}`}>
                     {section.label}
                   </span>
-                  <h2 className="mt-1 text-2xl font-bold text-slate-900">{section.title}</h2>
+                  <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-slate-950 sm:text-3xl">{section.title}</h2>
                   <p className="mt-1 text-sm text-slate-500">{section.desc}</p>
                 </div>
 
-                <Link href="/products" className="text-sm font-semibold text-blue-600 hover:underline">
-                  Xem tất cả →
+                <Link href="/products" className="shrink-0 rounded-xl px-3 py-2 text-sm font-bold text-blue-700 transition hover:bg-blue-50">
+                  Xem tất cả <span aria-hidden="true">→</span>
                 </Link>
               </div>
 

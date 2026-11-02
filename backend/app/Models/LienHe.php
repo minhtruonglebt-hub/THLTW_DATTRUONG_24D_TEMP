@@ -15,5 +15,7 @@ class LienHe extends Model
         'so_dien_thoai',
         'tieu_de',
         'noi_dung',
+        'trang_thai',
+        'phan_hoi',
     ];
 }

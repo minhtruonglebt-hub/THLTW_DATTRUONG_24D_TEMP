@@ -7,8 +7,8 @@ import { clearCart, removeFromCart, updateCartQuantity } from "@/utils/cartHelpe
 import { useCart } from "@/utils/useCart";
 
 // Đổi số lượng: không cho < 1, không cho vượt kho (báo lỗi nếu vi phạm)
-function changeQuantity(item, nextQuantity) {
-  const result = updateCartQuantity(item.id, nextQuantity);
+async function changeQuantity(item, nextQuantity) {
+  const result = await updateCartQuantity(item.id, nextQuantity);
   if (!result.ok) alert(result.message);
 }
 
@@ -17,13 +17,21 @@ export default function CartPage() {
   // Món nào có tồn kho đã lưu mà < 1 thì coi là HẾT HÀNG
   const isSoldOut = (item) => item.stock !== undefined && Number(item.stock) < 1;
   const hasSoldOut = items.some(isSoldOut);
+  const removeItem = async (productId) => {
+    const result = await removeFromCart(productId);
+    if (!result.ok) alert(result.message);
+  };
+  const emptyCart = async () => {
+    const result = await clearCart();
+    if (!result.ok) alert(result.message);
+  };
 
   return (
     <section className="mx-auto min-h-72 max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">Giỏ hàng</h1>
         {items.length > 0 && (
-          <button type="button" onClick={clearCart} className="text-sm font-medium text-red-600 hover:underline">
+          <button type="button" onClick={() => void emptyCart()} className="text-sm font-medium text-red-600 hover:underline">
             Xóa toàn bộ
           </button>
         )}
@@ -56,11 +64,11 @@ export default function CartPage() {
                   <div className="flex flex-wrap items-center justify-between gap-4 sm:justify-end">
                     <p className="min-w-24 font-semibold text-slate-800">{money(item.price)}</p>
                     <div className="flex items-center rounded-lg border border-slate-300">
-                      <button type="button" aria-label={`Giảm số lượng ${item.ten_san_pham}`} onClick={() => changeQuantity(item, Number(item.quantity) - 1)} disabled={Number(item.quantity) <= 1} className="px-3 py-2 disabled:cursor-not-allowed disabled:opacity-40">−</button>
+                      <button type="button" aria-label={`Giảm số lượng ${item.ten_san_pham}`} onClick={() => void changeQuantity(item, Number(item.quantity) - 1)} disabled={Number(item.quantity) <= 1} className="px-3 py-2 disabled:cursor-not-allowed disabled:opacity-40">−</button>
                       <span className="min-w-9 text-center" aria-live="polite">{item.quantity}</span>
-                      <button type="button" aria-label={`Tăng số lượng ${item.ten_san_pham}`} onClick={() => changeQuantity(item, Number(item.quantity) + 1)} disabled={item.stock !== undefined && Number(item.quantity) >= Number(item.stock)} className="px-3 py-2 disabled:cursor-not-allowed disabled:opacity-40">+</button>
+                      <button type="button" aria-label={`Tăng số lượng ${item.ten_san_pham}`} onClick={() => void changeQuantity(item, Number(item.quantity) + 1)} disabled={item.stock !== undefined && Number(item.quantity) >= Number(item.stock)} className="px-3 py-2 disabled:cursor-not-allowed disabled:opacity-40">+</button>
                     </div>
-                    <button type="button" onClick={() => removeFromCart(item.id)} className="text-sm font-medium text-red-600 hover:underline">Xóa</button>
+                    <button type="button" onClick={() => void removeItem(item.id)} className="text-sm font-medium text-red-600 hover:underline">Xóa</button>
                   </div>
                 </li>
               );

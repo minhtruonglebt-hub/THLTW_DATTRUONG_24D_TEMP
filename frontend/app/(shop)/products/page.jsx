@@ -111,8 +111,8 @@ function ProductsContent() {
     window.scrollTo({ top: 0, behavior: "smooth" }); // cuộn lên đầu trang
   };
 
-  const handleAddToCart = (product) => {
-    const result = addToCart(product);
+  const handleAddToCart = async (product) => {
+    const result = await addToCart(product);
     alert(result.message); // "HẾT HÀNG" nếu kho < 1
   };
 
@@ -129,8 +129,9 @@ function ProductsContent() {
   }
 
   const filteredProducts = allProducts.filter((product) => {
-    // Từ khoá: tên sản phẩm có chứa từ khoá (không phân biệt hoa thường)
-    if (keyword && !product.ten_san_pham.toLowerCase().includes(keyword.toLowerCase())) return false;
+    // Từ khóa khớp tên và mô tả (không phân biệt hoa thường)
+    const searchText = `${product.ten_san_pham ?? ""} ${product.mo_ta_ngan ?? ""} ${product.mo_ta ?? ""}`.toLowerCase();
+    if (keyword && !searchText.includes(keyword.toLowerCase())) return false;
 
     // Danh mục
     if (selectedCategoryIds.length > 0 && !selectedCategoryIds.includes(product.danh_muc_id)) return false;
@@ -158,20 +159,21 @@ function ProductsContent() {
   const pagedProducts = sortedProducts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
-    <div className="mx-auto max-w-7xl px-6 py-8">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10">
       {/* Tiêu đề + sắp xếp */}
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">
+          <p className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.2em] text-blue-600">Cửa hàng trực tuyến</p>
+          <h1 className="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl">
             {keyword ? `Kết quả cho "${keyword}"` : "Tất cả sản phẩm"}
           </h1>
-          <p className="mt-1 text-sm text-slate-500">{sortedProducts.length} sản phẩm</p>
+          <p className="mt-2 text-sm text-slate-500">Tìm thấy <span className="font-bold text-slate-800">{sortedProducts.length}</span> sản phẩm phù hợp</p>
         </div>
 
         <select
           value={sort}
           onChange={(e) => handleSortChange(e.target.value)}
-          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
+          className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm shadow-sm outline-none focus:border-blue-500"
         >
           <option value="default">Mới nhất</option>
           <option value="price_asc">Giá tăng dần</option>
@@ -211,7 +213,7 @@ function ProductsContent() {
               />
 
               <div className="mt-10">
-                <Pagination currentPage={page} pageCount={pageCount} onPageChange={handlePageChange} />
+                <Pagination currentPage={page} pageCount={pageCount} onPageChange={handlePageChange} alwaysShow />
               </div>
             </>
           )}

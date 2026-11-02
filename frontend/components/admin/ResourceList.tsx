@@ -9,6 +9,7 @@ import Notice from "@/components/Notice";
 import PageHeader from "@/components/PageHeader";
 import RowActions from "@/components/RowActions";
 import { Table, Td, Tr } from "@/components/Table";
+import Pagination from "@/components/common/Pagination";
 
 type ResourceListProps = {
   resourceKey: string;
@@ -27,6 +28,10 @@ export default function ResourceList({ resourceKey, editPath }: ResourceListProp
   const { rows, error, loading, reload } = useList(resourceKey);
   const [search, setSearch] = useState("");
   const [notice, setNotice] = useState<NoticeMessage | null>(null);
+  const [statusFilter, setStatusFilter] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [page, setPage] = useState(1);
 
   const filteredRows = useMemo(() => {
     const keyword = search.trim().toLowerCase();
@@ -34,6 +39,25 @@ export default function ResourceList({ resourceKey, editPath }: ResourceListProp
 
     return (rows ?? []).filter((row) => JSON.stringify(row).toLowerCase().includes(keyword));
   }, [rows, search]);
+
+  const visibleRows = useMemo(() => {
+    const filtered = filteredRows.filter((row) => {
+      if (statusFilter) {
+        const status = resource?.key === "lien-he" || resource?.key === "don-hang"
+          ? row.trang_thai
+          : String(Boolean(row.status));
+        if (String(status) !== statusFilter) return false;
+      }
+      const created = String(row.created_at ?? "").slice(0, 10);
+      if (fromDate && created < fromDate) return false;
+      if (toDate && created > toDate) return false;
+      return true;
+    });
+    return filtered;
+  }, [filteredRows, fromDate, resource?.key, statusFilter, toDate]);
+  const pageSize = 10;
+  const pageCount = Math.max(1, Math.ceil(visibleRows.length / pageSize));
+  const pagedRows = visibleRows.slice((page - 1) * pageSize, page * pageSize);
 
   async function deleteRow(row: Row) {
     if (!resource || !confirm("Xoá mục này? Hành động không thể hoàn tác.")) return;
@@ -71,19 +95,47 @@ export default function ResourceList({ resourceKey, editPath }: ResourceListProp
     }
   }
 
+  async function deleteContact(row: Row) {
+    if (!confirm("Xóa liên hệ đã xử lý này? Hành động không thể hoàn tác.")) return;
+    try {
+      await callApi(`${API}/admin/lien-he/${row.id}`, { method: "DELETE" });
+      setNotice({ text: "Đã xóa liên hệ", ok: true });
+      reload();
+    } catch (cause) {
+      setNotice({ text: cause instanceof Error ? cause.message : "Không xóa được liên hệ.", ok: false });
+    }
+  }
+
   if (!resource) return <p>Không có mục này.</p>;
 
-  const hasActions = Boolean(editPath) || resource.key === "don-hang";
+  const hasActions = Boolean(editPath) || ["don-hang", "lien-he", "nguoi-dung"].includes(resource.key);
 
   return (
     <>
       <PageHeader
         title={resource.title}
-        count={filteredRows.length}
+        count={visibleRows.length}
         search={search}
-        onSearch={setSearch}
+        onSearch={(value) => { setSearch(value); setPage(1); }}
         onAdd={editPath ? () => router.push(`/admin/${editPath}/create`) : undefined}
       />
+      {["don-hang", "lien-he", "nguoi-dung", "danh-muc", "thuong-hieu", "san-pham"].includes(resource.key) && (
+        <div className="mb-4 flex flex-wrap gap-3">
+          <select value={statusFilter} onChange={(event) => { setStatusFilter(event.target.value); setPage(1); }} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+            <option value="">Mọi trạng thái</option>
+            {resource.key === "don-hang" && <>
+              <option value="cho_xac_nhan">Chờ xác nhận</option><option value="da_xac_nhan">Đã xác nhận</option><option value="dang_giao">Đang giao</option><option value="hoan_tat">Hoàn tất</option><option value="da_huy">Đã hủy</option>
+            </>}
+            {resource.key === "lien-he" && <><option value="chua_xu_ly">Chưa xử lý</option><option value="da_xu_ly">Đã xử lý</option></>}
+            {resource.key === "nguoi-dung" && <><option value="true">Hoạt động</option><option value="false">Bị khóa</option></>}
+            {["danh-muc", "thuong-hieu", "san-pham"].includes(resource.key) && <><option value="true">Đang hiển thị</option><option value="false">Đang ẩn</option></>}
+          </select>
+          {resource.key === "don-hang" && <>
+            <label className="flex items-center gap-2 text-sm text-slate-600">Từ ngày<input type="date" value={fromDate} onChange={(event) => { setFromDate(event.target.value); setPage(1); }} className="rounded-lg border px-3 py-2" /></label>
+            <label className="flex items-center gap-2 text-sm text-slate-600">Đến ngày<input type="date" value={toDate} onChange={(event) => { setToDate(event.target.value); setPage(1); }} className="rounded-lg border px-3 py-2" /></label>
+          </>}
+        </div>
+      )}
 
       <Notice text={error} />
       {notice && <Notice text={notice.text} ok={notice.ok} />}
@@ -104,9 +156,9 @@ export default function ResourceList({ resourceKey, editPath }: ResourceListProp
         <Table
           headers={resource.columns.map((column) => column.label)}
           hasActions={hasActions}
-          isEmpty={filteredRows.length === 0}
+          isEmpty={visibleRows.length === 0}
         >
-          {filteredRows.map((row, index) => (
+          {pagedRows.map((row, index) => (
             <Tr key={row.id ?? index}>
               {resource.columns.map((column) => (
                 <Td key={column.label}>{column.render(row)}</Td>
@@ -138,12 +190,30 @@ export default function ResourceList({ resourceKey, editPath }: ResourceListProp
                       Huỷ đơn
                     </button>
                   )}
+                  {resource.key === "lien-he" && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => router.push(`/admin/contacts/${row.id}`)}
+                        className="rounded-md bg-teal-50 px-2.5 py-1 text-xs font-medium text-teal-700 hover:bg-teal-100"
+                      >
+                        {row.trang_thai === "da_xu_ly" ? "Xem / cập nhật" : "Tiếp nhận"}
+                      </button>
+                      {row.trang_thai === "da_xu_ly" && (
+                        <button type="button" onClick={() => void deleteContact(row)} className="ml-2 text-red-600 hover:underline">Xóa</button>
+                      )}
+                    </>
+                  )}
+                  {resource.key === "don-hang" && <button type="button" onClick={() => router.push(`/admin/orders/${row.id}`)} className="mr-2 text-teal-700 hover:underline">Chi tiết</button>}
+                  {resource.key === "nguoi-dung" && <button type="button" onClick={() => router.push(`/admin/users/${row.id}`)} className="text-teal-700 hover:underline">Chi tiết</button>}
                 </Td>
               )}
             </Tr>
           ))}
         </Table>
       )}
+
+      {visibleRows.length > pageSize && <div className="mt-5 flex justify-center"><Pagination currentPage={page} pageCount={pageCount} onPageChange={setPage} /></div>}
 
     </>
   );

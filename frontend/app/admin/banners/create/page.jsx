@@ -1,5 +1,5 @@
-import UnavailablePage from "@/components/shared/UnavailablePage";
+import ContentManager from "@/components/admin/ContentManager";
 
-export default function Page() {
-  return <UnavailablePage title="Banner — Thêm mới" />;
+export default function CreateBannerPage() {
+  return <ContentManager type="banners" mode="create" />;
 }

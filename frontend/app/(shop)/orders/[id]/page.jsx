@@ -153,6 +153,7 @@ export default function OrderDetailPage() {
           <h2 className="mb-2 font-semibold text-slate-900">Thanh toán</h2>
           <p>Phương thức: {isMomo ? "MoMo" : "Thanh toán khi nhận hàng (COD)"}</p>
           <p>Trạng thái: {PAYMENT_STATUS[order.trang_thai_thanh_toan] ?? order.trang_thai_thanh_toan}</p>
+          {order.ma_khuyen_mai && <p>Mã khuyến mãi: {order.ma_khuyen_mai} (giảm {money(order.tien_giam)})</p>}
         </div>
       </div>
 
