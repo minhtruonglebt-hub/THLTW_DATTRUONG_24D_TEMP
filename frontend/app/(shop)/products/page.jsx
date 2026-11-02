@@ -211,7 +211,7 @@ function ProductsContent() {
               />
 
               <div className="mt-10">
-                <Pagination currentPage={page} pageCount={pageCount} onPageChange={handlePageChange} />
+                <Pagination currentPage={page} pageCount={pageCount} onPageChange={handlePageChange} alwaysShow />
               </div>
             </>
           )}
