@@ -6,7 +6,7 @@
 // Luồng chạy:
 //   1. Khách điền họ tên, email, (số điện thoại, tiêu đề), nội dung
 //   2. Bấm "Gửi liên hệ" -> gửi POST lên Laravel: /api/lien-he
-//   3. Thành công -> hiện thông báo xanh và xoá form
+//   3. Thành công -> hiện phản hồi tự động (nếu có) và xoá form
 //      Thất bại   -> hiện dòng báo lỗi đỏ (lỗi nhập liệu do Laravel trả về)
 // Không cần đăng nhập. Admin xem các liên hệ ở /admin/contacts.
 // =====================================================================
@@ -45,6 +45,10 @@ export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successText, setSuccessText] = useState("");
   const [errorText, setErrorText] = useState("");
+  const [aiReply, setAiReply] = useState("");
+  const [emailNotice, setEmailNotice] = useState("");
+  const [needsHuman, setNeedsHuman] = useState(false);
+  const [demoMode, setDemoMode] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -52,6 +56,10 @@ export default function ContactPage() {
     setIsSubmitting(true);
     setSuccessText("");
     setErrorText("");
+    setAiReply("");
+    setEmailNotice("");
+    setNeedsHuman(false);
+    setDemoMode(false);
 
     // Tên ô trùng với tên cột Laravel cần nhận (ho_ten, email, ...)
     const data = Object.fromEntries(new FormData(form));
@@ -67,6 +75,25 @@ export default function ContactPage() {
         body: JSON.stringify(data),
       });
       setSuccessText(json.message ?? "Cảm ơn bạn! Chúng tôi đã nhận được liên hệ.");
+      setAiReply(json.ai_reply ?? "");
+      setNeedsHuman(Boolean(json.needs_human));
+      setDemoMode(json.reply_mode === "demo");
+      if (json.ai_reply) {
+        if (json.email_delivery === "logged") {
+          setEmailNotice("Email thử đã ghi vào backend/logs/laravel.log, chưa gửi tới hộp thư thật.");
+        } else if (json.email_delivery === "sent") {
+          setEmailNotice("Máy chủ email đã nhận bản sao phản hồi để gửi tới bạn.");
+        } else if (json.email_delivery === "failed") {
+          setEmailNotice("Gửi email thất bại; phản hồi vẫn hiển thị tại đây.");
+        } else {
+          setEmailNotice("Chưa cấu hình email gửi đi.");
+        }
+        if (json.needs_human) {
+          setEmailNotice((notice) => `${notice} Quản trị viên sẽ tiếp tục xử lý liên hệ.`);
+        }
+      } else {
+        setEmailNotice("Quản trị viên sẽ kiểm tra nội dung và phản hồi qua email.");
+      }
       form.reset();
       setContent("");
     } catch (cause) {
@@ -80,7 +107,10 @@ export default function ContactPage() {
     <section className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
       <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">Liên hệ</h1>
       <p className="mt-2 text-sm text-slate-600">
-        Bạn có thắc mắc về sản phẩm hoặc đơn hàng? Hãy gửi tin nhắn cho chúng tôi, chúng tôi sẽ phản hồi sớm nhất.
+        AI có thể hỗ trợ câu hỏi chung về sản phẩm. Câu hỏi về đơn hàng, thanh toán hoặc thông tin chưa rõ sẽ được chuyển cho quản trị viên.
+      </p>
+      <p className="mt-2 text-xs text-slate-500">
+        Nội dung bạn nhập có thể được gửi tới nhà cung cấp AI để soạn phản hồi. Không gửi mật khẩu, mã OTP hoặc thông tin thẻ.
       </p>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-3">
@@ -134,9 +164,13 @@ export default function ContactPage() {
             </label>
 
             {successText && (
-              <p role="status" className="rounded-lg bg-green-50 p-3 text-sm text-green-700">
-                {successText}
-              </p>
+              <div role="status" className="space-y-2 rounded-lg bg-green-50 p-3 text-sm text-green-800">
+                <p>{successText}</p>
+                {demoMode && <p className="font-semibold text-blue-800">Đang dùng AI DEMO: đây là phản hồi mô phỏng, không gọi AI thật.</p>}
+                {aiReply && <p className="whitespace-pre-wrap border-t border-green-200 pt-2">{aiReply}</p>}
+                {needsHuman && aiReply && <p className="text-xs text-amber-800">Liên hệ này đang chờ quản trị viên tiếp tục xử lý.</p>}
+                {emailNotice && <p className="text-xs text-green-700">{emailNotice}</p>}
+              </div>
             )}
             {errorText && (
               <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">

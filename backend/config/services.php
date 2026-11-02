@@ -47,4 +47,13 @@ return [
         'qr_tinh' => env('MOMO_QR_TINH', ''),
     ],
 
+    'ai' => [
+        'base_url' => env('AI_BASE_URL', 'https://api.openai.com/v1'),
+        'api_key' => env('AI_API_KEY', ''),
+        'model' => env('AI_MODEL', 'gpt-4o-mini'),
+        'demo_mode' => env('AI_DEMO_MODE', false),
+        'delivery_policy' => env('STORE_DELIVERY_POLICY', ''),
+        'return_policy' => env('STORE_RETURN_POLICY', ''),
+    ],
+
 ];

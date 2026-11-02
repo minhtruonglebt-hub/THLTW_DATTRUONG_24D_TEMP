@@ -83,6 +83,12 @@ export default function AdminContactDetailPage() {
         <p className="whitespace-pre-wrap pt-2 text-slate-700">{contact.noi_dung}</p>
       </div>
 
+      {contact.trang_thai === "chua_xu_ly" && contact.phan_hoi && (
+        <p role="status" className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
+          Khách đã nhận phản hồi tự động; cần quản trị viên kiểm tra và tiếp tục xử lý liên hệ này.
+        </p>
+      )}
+
       <form onSubmit={save} className="space-y-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium text-slate-600">Nội dung phản hồi / ghi chú xử lý</span>

@@ -24,3 +24,48 @@ tin tài khoản giả định.
 
 Nếu chưa cấu hình `MOMO_QR_TINH` hoặc chuỗi QR không hợp lệ, mã thanh toán sẽ không
 được hiển thị. Khi đó trang đơn hàng hướng khách chọn COD hoặc liên hệ cửa hàng.
+
+## AI trả lời tự động cho form liên hệ
+
+Form `/contact` lưu tin nhắn trong trang quản trị và có thể trả lời tự động bằng API
+tương thích OpenAI Chat Completions. Cần cấu hình riêng trong `backend/.env`:
+
+```dotenv
+AI_API_KEY="API key của nhà cung cấp AI"
+AI_BASE_URL="https://api.openai.com/v1"
+AI_MODEL="gpt-4o-mini"
+STORE_DELIVERY_POLICY="Chính sách giao hàng chính thức của cửa hàng"
+STORE_RETURN_POLICY="Chính sách đổi trả chính thức của cửa hàng"
+```
+
+Chỉ điền chính sách chính xác của cửa hàng. Để trống chính sách giao hàng/đổi trả thì
+AI sẽ chuyển câu hỏi liên quan cho quản trị viên. Câu hỏi về đơn cụ thể, thanh toán,
+chuyển khoản hoặc hoàn tiền luôn được chuyển quản trị viên và không gửi sang nhà cung
+cấp AI. Với câu hỏi AI không chắc chắn, liên hệ vẫn ở trạng thái **Chưa xử lý** để
+quản trị viên theo dõi. Tin nhắn khách (không gồm email, tên hoặc điện thoại) cùng
+danh mục sản phẩm được gửi tới nhà cung cấp AI đã cấu hình.
+
+Để gửi bản sao câu trả lời cho khách qua email, thay cấu hình Mailpit mặc định bằng
+SMTP thật trong `backend/.env` (`MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`,
+`MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_ENCRYPTION`, `MAIL_FROM_ADDRESS`). Sau khi
+đổi cấu hình, chạy `php artisan config:clear` trong thư mục `backend` và khởi động
+lại backend. Nếu chưa có API key hoặc SMTP lỗi, liên hệ vẫn được lưu và quản trị
+viên có thể tiếp tục trả lời trong `/admin/contacts`.
+
+### Thử ngay trên máy local (không cần API key)
+
+Trong `backend/.env`, bật chế độ mô phỏng và ghi email vào log thay vì gửi thư thật:
+
+```dotenv
+AI_DEMO_MODE=true
+MAIL_MAILER=log
+MAIL_FROM_ADDRESS="no-reply@local.test"
+MAIL_FROM_NAME="Cua hang - che do thu"
+```
+
+Sau đó chạy `php artisan config:clear`, khởi động lại backend, mở
+`http://localhost:3000/contact` và gửi câu hỏi **"Cửa hàng có những sản phẩm nào?"**.
+Trang sẽ ghi rõ đây là **AI DEMO**; câu trả lời dùng danh mục và giá trong cơ sở dữ liệu,
+không gọi nhà cung cấp AI. Email thử được ghi ở `backend/logs/laravel.log`, không gửi tới
+hộp thư. Thử hỏi về thanh toán/đơn hàng để xác nhận trường hợp này được chuyển quản trị viên.
+Chỉ bật `AI_DEMO_MODE` trong môi trường local/testing; chế độ production bỏ qua cờ demo.
