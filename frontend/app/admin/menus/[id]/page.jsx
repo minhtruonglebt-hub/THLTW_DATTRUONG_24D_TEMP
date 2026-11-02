@@ -1,5 +1,5 @@
-import UnavailablePage from "@/components/shared/UnavailablePage";
+import ContentManager from "@/components/admin/ContentManager";
 
-export default function Page() {
-  return <UnavailablePage title="Menu — Chi tiết" />;
+export default function EditMenuPage() {
+  return <ContentManager type="menus" mode="edit" />;
 }

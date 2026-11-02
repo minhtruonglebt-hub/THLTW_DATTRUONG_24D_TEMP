@@ -1,5 +1,5 @@
-import UnavailablePage from "@/components/shared/UnavailablePage";
+import ResourceList from "@/components/admin/ResourceList";
 
-export default function Page() {
-  return <UnavailablePage title="Liên hệ" />;
+export default function ContactAdminPage() {
+  return <ResourceList resourceKey="lien-he" />;
 }

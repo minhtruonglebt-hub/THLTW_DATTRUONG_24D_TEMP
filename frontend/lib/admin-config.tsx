@@ -14,6 +14,14 @@ export type Resource = {
   columns: Column[];
 };
 
+export const ORDER_STATUS: Record<string, string> = {
+  cho_xac_nhan: "Chờ xác nhận",
+  da_xac_nhan: "Đã xác nhận",
+  dang_giao: "Đang giao",
+  hoan_tat: "Hoàn tất",
+  da_huy: "Đã huỷ",
+};
+
 const text = (field: string) => (row: Row) => row[field] ?? "—";
 
 function statusBadge(row: Row) {
@@ -29,6 +37,11 @@ function orderStatus(row: Row) {
   const tone = status === "cho_xac_nhan" ? "warn" : status === "da_huy" ? "off" : "ok";
 
   return <Badge text={labels[status] ?? status} tone={tone} />;
+}
+
+function contactStatus(row: Row) {
+  const handled = row.trang_thai === "da_xu_ly";
+  return <Badge text={handled ? "Đã xử lý" : "Chưa xử lý"} tone={handled ? "ok" : "warn"} />;
 }
 
 export const RESOURCES: Resource[] = [
@@ -113,6 +126,25 @@ export const RESOURCES: Resource[] = [
       { label: "Tài khoản", render: (row) => row.nguoi_dung_id ?? "Khách" },
       { label: "Trạng thái", render: orderStatus },
       { label: "Ngày đặt", render: (row) => date(row.created_at) },
+    ],
+  },
+  {
+    key: "lien-he",
+    title: "Tiếp nhận liên hệ",
+    columns: [
+      { label: "Người gửi", render: text("ho_ten") },
+      { label: "Email", render: text("email") },
+      { label: "Tiêu đề", render: text("tieu_de") },
+      {
+        label: "Nội dung",
+        render: (row) => (
+          <span className="block max-w-xs truncate" title={row.noi_dung ?? ""}>
+            {row.noi_dung ?? "—"}
+          </span>
+        ),
+      },
+      { label: "Trạng thái", render: contactStatus },
+      { label: "Ngày gửi", render: (row) => date(row.created_at) },
     ],
   },
   {

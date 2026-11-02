@@ -89,9 +89,9 @@ export default function ProductDetailPage() {
     };
   }, [slug, loadRelatedProducts]);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!product) return;
-    const result = addToCart(product, quantity);
+    const result = await addToCart(product, quantity);
     alert(result.ok ? `Đã thêm ${quantity} sản phẩm vào giỏ hàng` : result.message);
   };
 
@@ -244,8 +244,8 @@ export default function ProductDetailPage() {
         ) : relatedProducts.length > 0 ? (
           <ProductList
             products={relatedProducts}
-            onAddToCart={(item) => {
-              const result = addToCart(item);
+            onAddToCart={async (item) => {
+              const result = await addToCart(item);
               alert(result.message);
             }}
             gridClass="grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"

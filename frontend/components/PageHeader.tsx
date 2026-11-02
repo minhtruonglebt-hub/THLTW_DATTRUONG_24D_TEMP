@@ -13,10 +13,11 @@ type PageHeaderProps = {
 
 export default function PageHeader({ title, count, search, onSearch, onAdd }: PageHeaderProps) {
   return (
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+    <div className="mb-6 flex flex-wrap items-end justify-between gap-4 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">{title}</h1>
-        <p className="mt-1 text-sm text-slate-500">{count} bản ghi</p>
+        <p className="mb-1 text-xs font-bold uppercase tracking-[0.18em] text-blue-600">Quản lý cửa hàng</p>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{title}</h1>
+        <p className="mt-2 inline-flex items-center gap-2 text-sm text-slate-500"><span className="h-1.5 w-1.5 rounded-full bg-blue-500" />{count} bản ghi</p>
       </div>
       <div className="flex w-full flex-wrap gap-3 sm:w-auto">
         <input
@@ -28,7 +29,7 @@ export default function PageHeader({ title, count, search, onSearch, onAdd }: Pa
         {onAdd && (
           <button
             onClick={onAdd}
-            className="whitespace-nowrap rounded-lg bg-teal-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800"
+            className="whitespace-nowrap rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-600/15 transition hover:-translate-y-0.5 hover:bg-blue-700"
           >
             + Thêm mới
           </button>

@@ -16,9 +16,9 @@ export default function ProductCard({ product, onAddToCart }) {
   const outOfStock = Number(product.so_luong) <= 0; // hết hàng?
 
   return (
-    <div className="group flex flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition hover:shadow-lg">
+    <article className="group flex flex-col overflow-hidden rounded-3xl border border-slate-200/70 bg-white shadow-[0_8px_28px_-22px_rgba(15,23,42,0.45)] transition duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl hover:shadow-slate-900/10">
       {/* Ảnh sản phẩm (bấm vào để xem chi tiết) */}
-      <Link href={`/products/${product.slug}`} className="relative block aspect-square bg-slate-50">
+      <Link href={`/products/${product.slug}`} className="relative block aspect-square overflow-hidden bg-gradient-to-br from-slate-50 to-blue-50/60">
         {imageUrl ? (
           <Image
             src={imageUrl}
@@ -29,17 +29,17 @@ export default function ProductCard({ product, onAddToCart }) {
             className="object-cover transition group-hover:scale-105"
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-sm text-slate-400">Chưa có ảnh</div>
+          <div className="flex h-full flex-col items-center justify-center gap-2 text-sm font-medium text-slate-400"><span className="text-3xl opacity-50">▧</span>Chưa có ảnh</div>
         )}
 
         {/* Nhãn giảm giá / hết hàng */}
         {outOfStock ? (
-          <span className="absolute left-3 top-3 rounded bg-slate-700 px-2 py-1 text-xs font-semibold text-white">
+          <span className="absolute left-3 top-3 rounded-full bg-slate-800 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white shadow-sm">
             Hết hàng
           </span>
         ) : (
           isOnSale(product) && (
-            <span className="absolute left-3 top-3 rounded bg-red-500 px-2 py-1 text-xs font-semibold text-white">
+            <span className="absolute left-3 top-3 rounded-full bg-rose-500 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white shadow-sm">
               -{getDiscountPercent(product)}%
             </span>
           )
@@ -47,19 +47,19 @@ export default function ProductCard({ product, onAddToCart }) {
       </Link>
 
       {/* Thông tin */}
-      <div className="flex flex-1 flex-col p-4">
-        <p className="text-xs text-slate-400">{product.thuong_hieu?.name ?? ""}</p>
+      <div className="flex flex-1 flex-col p-4 sm:p-5">
+        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-blue-600">{product.thuong_hieu?.ten_thuong_hieu ?? product.thuong_hieu?.name ?? ""}</p>
 
         <Link
           href={`/products/${product.slug}`}
-          className="mt-1 line-clamp-2 min-h-10 text-sm font-medium text-slate-800 hover:text-blue-600"
+          className="mt-2 line-clamp-2 min-h-10 text-sm font-semibold leading-6 text-slate-800 transition hover:text-blue-600"
         >
           {product.ten_san_pham}
         </Link>
 
         {/* Giá */}
         <div className="mt-2 flex items-baseline gap-2">
-          <span className="text-lg font-bold text-red-600">{money(getPrice(product))}</span>
+          <span className="text-lg font-extrabold tracking-tight text-slate-950">{money(getPrice(product))}</span>
           {isOnSale(product) && (
             <span className="text-sm text-slate-400 line-through">{money(product.gia)}</span>
           )}
@@ -68,11 +68,11 @@ export default function ProductCard({ product, onAddToCart }) {
         <button
           onClick={() => onAddToCart(product)}
           disabled={outOfStock}
-          className="mt-4 w-full rounded-lg bg-blue-600 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+          className="mt-5 w-full rounded-xl bg-slate-950 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-700/20 disabled:cursor-not-allowed disabled:bg-slate-300"
         >
           {outOfStock ? "Hết hàng" : "Thêm vào giỏ"}
         </button>
       </div>
-    </div>
+    </article>
   );
 }

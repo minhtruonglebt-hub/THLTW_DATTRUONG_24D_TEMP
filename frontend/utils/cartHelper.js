@@ -7,8 +7,35 @@
 // =====================================================================
 
 import { getPrice } from "./priceHelper";
+import { API, callApi } from "@/lib/api";
 
 const CART_KEY = "cart";
+const CART_SESSION_KEY = "cart_session_id";
+
+export function getCartSessionId() {
+  let sessionId = localStorage.getItem(CART_SESSION_KEY);
+  if (!sessionId) {
+    sessionId = globalThis.crypto?.randomUUID?.()
+      ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    localStorage.setItem(CART_SESSION_KEY, sessionId);
+  }
+  return sessionId;
+}
+
+async function requestServerCart(method, data = {}) {
+  const sessionId = getCartSessionId();
+  const options = {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      "X-Session-Id": sessionId,
+    },
+  };
+  if (method !== "GET") {
+    options.body = JSON.stringify({ ...data, session_id: sessionId });
+  }
+  return callApi(`${API}/gio-hang`, options);
+}
 
 // Đọc giỏ hàng hiện tại (không có thì trả về mảng rỗng)
 export function getCart() {
@@ -29,7 +56,7 @@ function saveCart(cart) {
 // Trả về { ok, message }:
 //  - Hết hàng (so_luong < 1)  -> ok = false, message = "HẾT HÀNG"
 //  - Vượt quá tồn kho         -> ok = false, báo số lượng còn lại
-export function addToCart(product, quantity = 1) {
+export async function addToCart(product, quantity = 1) {
   const stock = Math.floor(Number(product.so_luong));
 
   // Số lượng trong kho dưới 1 => báo HẾT HÀNG, không cho thêm
@@ -44,6 +71,12 @@ export function addToCart(product, quantity = 1) {
 
   if (currentQuantity + safeQuantity > stock) {
     return { ok: false, message: `Chỉ còn ${stock} sản phẩm trong kho (trong giỏ đã có ${currentQuantity})` };
+  }
+
+  try {
+    await requestServerCart("POST", { san_pham_id: product.id, so_luong: safeQuantity });
+  } catch (cause) {
+    return { ok: false, message: cause instanceof Error ? cause.message : "Không thể cập nhật giỏ hàng." };
   }
 
   if (exist) {
@@ -66,7 +99,7 @@ export function addToCart(product, quantity = 1) {
 }
 
 // Đổi số lượng 1 món trong giỏ: không cho < 1 và không cho vượt tồn kho
-export function updateCartQuantity(productId, quantity) {
+export async function updateCartQuantity(productId, quantity) {
   const safeQuantity = Math.floor(Number(quantity));
   if (!Number.isFinite(safeQuantity) || safeQuantity < 1) return { ok: false, message: "Số lượng tối thiểu là 1" };
 
@@ -76,6 +109,27 @@ export function updateCartQuantity(productId, quantity) {
     return { ok: false, message: `Chỉ còn ${stock} sản phẩm trong kho` };
   }
 
+  try {
+    const serverCart = await requestServerCart("GET");
+    const detail = (serverCart.data?.chi_tiets ?? []).find(
+      (item) => Number(item.san_pham_id) === Number(productId),
+    );
+    if (detail) {
+      await callApi(`${API}/gio-hang/${detail.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Session-Id": getCartSessionId(),
+        },
+        body: JSON.stringify({ so_luong: safeQuantity, session_id: getCartSessionId() }),
+      });
+    } else {
+      await requestServerCart("POST", { san_pham_id: productId, so_luong: safeQuantity });
+    }
+  } catch (cause) {
+    return { ok: false, message: cause instanceof Error ? cause.message : "Không thể cập nhật giỏ hàng." };
+  }
+
   const cart = getCart().map((item) =>
     item.id === productId ? { ...item, quantity: safeQuantity } : item,
   );
@@ -83,11 +137,39 @@ export function updateCartQuantity(productId, quantity) {
   return { ok: true, message: "" };
 }
 
-export function removeFromCart(productId) {
+export async function removeFromCart(productId) {
+  try {
+    const serverCart = await requestServerCart("GET");
+    const detail = (serverCart.data?.chi_tiets ?? []).find(
+      (item) => Number(item.san_pham_id) === Number(productId),
+    );
+    if (detail) {
+      const sessionId = getCartSessionId();
+      await callApi(`${API}/gio-hang/${detail.id}`, {
+        method: "DELETE",
+        headers: { "X-Session-Id": sessionId },
+      });
+    }
+  } catch (cause) {
+    return { ok: false, message: cause instanceof Error ? cause.message : "Không thể xóa sản phẩm khỏi giỏ." };
+  }
+
   saveCart(getCart().filter((item) => item.id !== productId));
+  return { ok: true, message: "" };
 }
 
-export function clearCart() {
+export async function clearCart() {
+  try {
+    await requestServerCart("DELETE");
+  } catch (cause) {
+    return { ok: false, message: cause instanceof Error ? cause.message : "Không thể xóa giỏ hàng." };
+  }
+
+  clearLocalCart();
+  return { ok: true, message: "" };
+}
+
+export function clearLocalCart() {
   saveCart([]);
 }
 
