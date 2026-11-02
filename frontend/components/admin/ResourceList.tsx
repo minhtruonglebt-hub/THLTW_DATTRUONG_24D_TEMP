@@ -72,7 +72,7 @@ export default function ResourceList({ resourceKey, editPath }: ResourceListProp
   }
 
   async function confirmPayment(row: Row) {
-    if (!confirm(`Bạn đã thấy tiền của đơn ${row.ma_don_hang} trong MoMo?`)) return;
+    if (!confirm(`Bạn đã kiểm tra và nhận được tiền của đơn ${row.ma_don_hang}?`)) return;
 
     try {
       await callApi(`${API}/don-hang/${row.id}/xac-nhan-thanh-toan`, { method: "POST" }, getToken() ?? undefined);

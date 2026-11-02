@@ -108,7 +108,7 @@ export const RESOURCES: Resource[] = [
       {
         label: "Thanh toán",
         render: (row) => {
-          const method = { cod: "COD", momo: "MoMo", momo_qr: "MoMo QR" }[row.phuong_thuc_thanh_toan as string] ?? row.phuong_thuc_thanh_toan ?? "—";
+          const method = { cod: "COD", momo: "MoMo", momo_qr: "QR ngân hàng" }[row.phuong_thuc_thanh_toan as string] ?? row.phuong_thuc_thanh_toan ?? "—";
           const paid = row.trang_thai_thanh_toan === "da_thanh_toan";
           const waiting = row.trang_thai_thanh_toan === "cho_shop_xac_nhan";
           return (

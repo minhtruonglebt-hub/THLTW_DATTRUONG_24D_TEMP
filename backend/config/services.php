@@ -41,7 +41,7 @@ return [
         'frontend_url' => env('FRONTEND_URL', 'http://localhost:3000'),
         // IPN cần địa chỉ public (ngrok). Không có thì bỏ trống: web vẫn tự hỏi MoMo kết quả.
         'ipn_url' => env('MOMO_IPN_URL', ''),
-        // --- Nhận tiền vào MoMo cá nhân bằng mã QR (xem MomoQrService) ---
+        // --- QR chuyển khoản (MOMO_QR_TINH là tên biến cấu hình cũ) ---
         'nhan_ten' => env('MOMO_NHAN_TEN', ''),
         'nhan_sdt' => env('MOMO_NHAN_SDT', ''),
         'qr_tinh' => env('MOMO_QR_TINH', ''),

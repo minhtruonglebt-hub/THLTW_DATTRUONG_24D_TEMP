@@ -6,15 +6,15 @@ use App\Models\DonHang;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Tạo mã QR nhận tiền MoMo CÁ NHÂN có sẵn số tiền + mã đơn hàng.
+ * Tạo mã QR chuyển khoản VietQR có sẵn số tiền + mã đơn hàng.
  *
- * Cách làm: lấy chuỗi của mã "QR nhận tiền" tĩnh trong app MoMo của shop (đặt ở .env: MOMO_QR_TINH),
+ * Cách làm: lấy chuỗi EMVCo/VietQR tĩnh của tài khoản cửa hàng (đặt ở .env: MOMO_QR_TINH),
  * rồi với mỗi đơn hàng thì:
  *   - đổi loại QR từ tĩnh (11) sang động (12)
  *   - thêm số tiền (tag 54)
  *   - ghi mã đơn vào nội dung chuyển khoản (tag 62 -> 08)
  *   - tính lại mã kiểm tra CRC (tag 63)
- * Chuỗi trả về dùng được để vẽ QR; MoMo và app ngân hàng quét là tự điền số tiền + nội dung.
+ * Chuỗi trả về dùng được để vẽ QR; app ngân hàng và MoMo quét sẽ điền số tiền + nội dung.
  */
 class MomoQrService
 {

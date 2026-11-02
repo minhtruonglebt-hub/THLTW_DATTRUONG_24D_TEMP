@@ -26,7 +26,7 @@ const NEXT_STATUS = {
   da_huy: [],
 };
 
-const PAYMENT_METHOD = { cod: "COD (thanh toán khi nhận hàng)", momo: "MoMo", momo_qr: "MoMo QR" };
+const PAYMENT_METHOD = { cod: "COD (thanh toán khi nhận hàng)", momo: "MoMo", momo_qr: "QR ngân hàng" };
 
 export default function AdminOrderDetailPage() {
   const { id } = useParams();

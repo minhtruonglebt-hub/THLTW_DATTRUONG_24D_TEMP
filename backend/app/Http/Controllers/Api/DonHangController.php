@@ -121,7 +121,7 @@ class DonHangController extends Controller
             return $donHang;
         });
 
-        // Tạo QR MoMo NGOÀI transaction: MoMo lỗi thì đơn vẫn còn, khách bấm "Tạo lại mã" ở trang đơn hàng
+        // Tạo QR thanh toán ngoài transaction để lỗi tạo mã không làm mất đơn hàng
         $canhBao = null;
         if ($phuongThuc === 'momo') {
             try {
@@ -176,7 +176,7 @@ class DonHangController extends Controller
 
     // ===================== MOMO =====================
 
-    /** Tạo (lại) mã QR MoMo cho đơn chưa thanh toán. */
+    /** Tạo (lại) mã thanh toán MoMo cho đơn chưa thanh toán. */
     public function taoThanhToanMomo(Request $request, DonHang $donHang): DonHangResource|JsonResponse
     {
         $this->kiemTraQuyenXem($request, $donHang);
@@ -248,7 +248,7 @@ class DonHangController extends Controller
         return response()->noContent();
     }
 
-    // ===================== QR MOMO CÁ NHÂN (không có cổng tự báo => shop xác nhận tay) =====================
+    // ===================== QR CHUYỂN KHOẢN (shop xác nhận thủ công) =====================
 
     /** Khách bấm "Tôi đã chuyển khoản" -> đơn chuyển sang chờ shop đối chiếu tiền. */
     public function baoDaChuyenKhoan(Request $request, DonHang $donHang): DonHangResource|JsonResponse
@@ -256,7 +256,7 @@ class DonHangController extends Controller
         $this->kiemTraQuyenXem($request, $donHang);
 
         if ($donHang->phuong_thuc_thanh_toan !== 'momo_qr') {
-            return response()->json(['message' => 'Đơn hàng này không thanh toán bằng QR MoMo'], 422);
+            return response()->json(['message' => 'Đơn hàng này không thanh toán bằng QR chuyển khoản'], 422);
         }
         if ($donHang->trang_thai === 'da_huy') {
             return response()->json(['message' => 'Đơn hàng đã bị huỷ'], 422);

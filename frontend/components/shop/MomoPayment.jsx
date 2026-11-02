@@ -1,7 +1,6 @@
 "use client";
 
-// Khung thanh toán MoMo trong trang đơn hàng: hiện mã QR, nút mở MoMo, trạng thái thanh toán.
-// Việc hỏi MoMo "đã trả tiền chưa" do trang đơn hàng lo (tự hỏi mỗi vài giây), component này chỉ hiển thị.
+// Hiển thị mã QR chuyển khoản hoặc thanh toán MoMo trên trang đơn hàng.
 
 import { QRCodeSVG } from "qrcode.react";
 import { date, money } from "@/lib/format";
@@ -14,7 +13,7 @@ export default function MomoPayment({ order, busy, onRetry, onPaid, message }) {
   if (paid) {
     return (
       <div className="rounded-xl border border-green-200 bg-green-50 p-5 text-green-800">
-        <p className="font-semibold">✔ Đã thanh toán {money(order.tong_tien)} qua MoMo</p>
+        <p className="font-semibold">✔ Đã thanh toán {money(order.tong_tien)}</p>
         {order.paid_at && <p className="mt-1 text-sm">Lúc {date(order.paid_at)}</p>}
       </div>
     );
@@ -22,30 +21,29 @@ export default function MomoPayment({ order, busy, onRetry, onPaid, message }) {
 
   if (order.trang_thai === "da_huy") return null;
 
-  // ---- QR MoMo cá nhân: khách quét, shop đối chiếu tiền rồi xác nhận ----
+  // ---- QR chuyển khoản: khách quét, shop đối chiếu tiền rồi xác nhận ----
   if (order.phuong_thuc_thanh_toan === "momo_qr") {
     const qr = order.thanh_toan;
     const reported = order.trang_thai_thanh_toan === "cho_shop_xac_nhan";
 
     return (
       <div className="rounded-xl border border-pink-200 bg-white p-5">
-        <h2 className="mb-3 font-semibold text-slate-900">Chuyển khoản qua MoMo</h2>
+        <h2 className="mb-3 font-semibold text-slate-900">Chuyển khoản qua QR ngân hàng</h2>
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-6">
           {qr?.qr_content ? (
             <div className="rounded-lg border border-slate-200 bg-white p-3">
               <QRCodeSVG value={qr.qr_content} size={208} marginSize={1} />
             </div>
           ) : (
-            <p className="max-w-52 rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
-              Shop chưa cài mã QR. Bạn vui lòng chuyển khoản thủ công theo thông tin bên cạnh.
+            <p className="max-w-64 rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
+              Shop chưa cấu hình mã QR nhận tiền. Vui lòng chọn COD hoặc liên hệ shop để được hỗ trợ thanh toán.
             </p>
           )}
           <div className="space-y-2 text-sm text-slate-700">
             <p>Số tiền: <b className="text-base text-slate-900">{money(qr?.so_tien ?? order.tong_tien)}</b></p>
             {qr?.ten && <p>Người nhận: <b>{qr.ten}</b></p>}
-            {qr?.sdt && <p>SĐT MoMo: <b>{qr.sdt}</b></p>}
             <p>Nội dung: <b>{order.ma_don_hang}</b></p>
-            <p className="text-xs text-slate-500">Quét bằng MoMo hoặc app ngân hàng. Số tiền và nội dung đã điền sẵn, vui lòng không sửa.</p>
+            <p className="text-xs text-slate-500">Quét bằng app ngân hàng hoặc MoMo. Số tiền và nội dung đã điền sẵn, vui lòng không sửa.</p>
 
             {reported ? (
               <p className="rounded-lg bg-blue-50 p-3 text-blue-800" aria-live="polite">

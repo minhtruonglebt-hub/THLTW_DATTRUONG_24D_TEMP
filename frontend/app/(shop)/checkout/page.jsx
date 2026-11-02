@@ -2,9 +2,9 @@
 
 // =====================================================================
 // TRANG THANH TOÁN  ->  /checkout
-//   1. Khách điền tên, số điện thoại, địa chỉ + chọn COD hoặc MoMo
+//   1. Khách điền tên, số điện thoại, địa chỉ + chọn COD hoặc QR chuyển khoản
 //   2. Gửi giỏ hàng (id + số lượng) lên Laravel. GIÁ KHÔNG GỬI: server tự lấy giá từ DB.
-//   3. Tạo đơn xong -> xoá giỏ -> sang /orders/{id} (nếu chọn MoMo sẽ hiện mã QR ở đó)
+//   3. Tạo đơn xong -> xoá giỏ -> sang /orders/{id} (nếu chọn QR sẽ hiện mã thanh toán ở đó)
 // =====================================================================
 
 import { useState } from "react";
@@ -21,7 +21,7 @@ const inputClass =
   "w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500";
 
 const METHODS = [
-  { value: "momo_qr", title: "Chuyển khoản MoMo (quét mã QR)", note: "Mã QR có sẵn số tiền và nội dung. Quét bằng MoMo hoặc app ngân hàng." },
+  { value: "momo_qr", title: "Chuyển khoản ngân hàng (quét mã QR)", note: "Mã QR có sẵn số tiền và nội dung. Quét bằng app ngân hàng hoặc MoMo." },
   { value: "cod", title: "Thanh toán khi nhận hàng (COD)", note: "Trả tiền mặt cho shipper." },
 ];
 

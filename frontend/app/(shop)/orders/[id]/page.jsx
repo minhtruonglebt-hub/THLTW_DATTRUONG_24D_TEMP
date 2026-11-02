@@ -151,7 +151,7 @@ export default function OrderDetailPage() {
         </div>
         <div className="space-y-1 rounded-xl border border-slate-200 bg-white p-5 text-sm text-slate-700">
           <h2 className="mb-2 font-semibold text-slate-900">Thanh toán</h2>
-          <p>Phương thức: {isMomo ? "MoMo" : "Thanh toán khi nhận hàng (COD)"}</p>
+          <p>Phương thức: {order.phuong_thuc_thanh_toan === "momo_qr" ? "QR chuyển khoản ngân hàng" : order.phuong_thuc_thanh_toan === "momo" ? "MoMo" : "Thanh toán khi nhận hàng (COD)"}</p>
           <p>Trạng thái: {PAYMENT_STATUS[order.trang_thai_thanh_toan] ?? order.trang_thai_thanh_toan}</p>
           {order.ma_khuyen_mai && <p>Mã khuyến mãi: {order.ma_khuyen_mai} (giảm {money(order.tien_giam)})</p>}
         </div>
