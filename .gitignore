@@ -57,6 +57,7 @@ Homestead.yaml
 /frontend/dist
 /frontend/build
 /frontend/.next
+/frontend/.next-preview
 /frontend/.nuxt
 /frontend/.vite
 /frontend/coverage
