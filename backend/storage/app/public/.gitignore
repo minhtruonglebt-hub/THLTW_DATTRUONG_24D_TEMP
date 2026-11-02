@@ -1,2 +1,12 @@
 *
 !.gitignore
+!uploads/
+uploads/*
+!uploads/products/
+uploads/products/*
+!uploads/products/anker-usbc-1m.jpg
+!uploads/products/anker-20w.jpg
+!uploads/products/logitech-h390.jpg
+!uploads/products/asus-vivobook-15.jpg
+!uploads/products/iphone-15.jpg
+!uploads/products/galaxy-s24.jpg
