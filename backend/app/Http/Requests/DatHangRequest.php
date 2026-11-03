@@ -15,7 +15,7 @@ class DatHangRequest extends FormRequest
     {
         return [
             'ho_ten' => 'required|string|max:255',
-            'so_dien_thoai' => 'required|string|max:20',
+            'so_dien_thoai' => ['required', 'string', 'regex:/^[0-9]{10}$/'],
             'dia_chi_giao_hang' => 'required|string|max:500',
             'phuong_thuc_thanh_toan' => 'nullable|in:cod,momo,momo_qr',
             // Giỏ hàng gửi thẳng từ trình duyệt (localStorage). Giá KHÔNG gửi lên, server tự lấy từ DB.

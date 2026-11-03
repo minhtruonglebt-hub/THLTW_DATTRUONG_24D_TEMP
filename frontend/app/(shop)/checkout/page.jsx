@@ -121,7 +121,22 @@ export default function CheckoutPage() {
           </label>
           <label className="block text-sm font-medium text-slate-700">
             Số điện thoại
-            <input name="so_dien_thoai" required maxLength={20} inputMode="tel" defaultValue={user?.so_dien_thoai ?? ""} autoComplete="tel" className={`${inputClass} mt-1`} />
+            <input
+              name="so_dien_thoai"
+              type="tel"
+              required
+              maxLength={10}
+              pattern="[0-9]{10}"
+              title="Vui lòng nhập đúng 10 chữ số."
+              inputMode="numeric"
+              defaultValue={String(user?.so_dien_thoai ?? "").replace(/\D/g, "").slice(0, 10)}
+              onChange={(event) => {
+                event.currentTarget.value = event.currentTarget.value.replace(/\D/g, "").slice(0, 10);
+              }}
+              autoComplete="tel"
+              className={`${inputClass} mt-1`}
+            />
+            <span className="mt-1 block text-xs text-slate-500">Nhập đúng 10 chữ số.</span>
           </label>
           <label className="block text-sm font-medium text-slate-700">
             Địa chỉ giao hàng

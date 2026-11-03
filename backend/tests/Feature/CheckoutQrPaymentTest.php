@@ -10,6 +10,18 @@ class CheckoutQrPaymentTest extends TestCase
 {
     use DatabaseTransactions;
 
+    public function test_checkout_requires_exactly_ten_numeric_phone_digits(): void
+    {
+        foreach (['123456789', '12345678901', '12345abc90'] as $phone) {
+            $this->postJson('/api/don-hang', [
+                'ho_ten' => 'Phone validation test',
+                'so_dien_thoai' => $phone,
+                'dia_chi_giao_hang' => 'Test address',
+            ])->assertUnprocessable()
+                ->assertJsonValidationErrors('so_dien_thoai');
+        }
+    }
+
     public function test_guest_checkout_returns_a_dynamic_transfer_qr_for_the_order(): void
     {
         config(['services.momo.qr_tinh' => $this->buildStaticQr()]);
