@@ -20,9 +20,17 @@ class DonHang extends Model
         'tong_tien',
         'phuong_thuc_thanh_toan',
         'trang_thai',
+        'trang_thai_thanh_toan',
+        'momo_order_id',
+        'momo_trans_id',
+        'momo_pay_url',
+        'momo_qr_code',
+        'paid_at',
+        'ma_khuyen_mai',
+        'tien_giam',
     ];
 
-    protected $casts = ['tong_tien' => 'decimal:2'];
+    protected $casts = ['tong_tien' => 'decimal:2', 'tien_giam' => 'decimal:2', 'paid_at' => 'datetime'];
 
     public function nguoiDung()
     {
@@ -32,5 +40,10 @@ class DonHang extends Model
     public function chiTiets()
     {
         return $this->hasMany(ChiTietDonHang::class, 'don_hang_id');
+    }
+
+    public function lichSus()
+    {
+        return $this->hasMany(LichSuTrangThaiDonHang::class, 'don_hang_id')->orderBy('id');
     }
 }

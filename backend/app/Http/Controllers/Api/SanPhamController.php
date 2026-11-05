@@ -31,7 +31,27 @@ class SanPhamController extends Controller
         }
 
         if ($request->filled('keyword')) {
-            $query->where('ten_san_pham', 'like', '%'.$request->keyword.'%');
+            $keyword = '%'.$request->keyword.'%';
+            $query->where(function ($builder) use ($keyword) {
+                $builder->where('ten_san_pham', 'like', $keyword)
+                    ->orWhere('mo_ta_ngan', 'like', $keyword)
+                    ->orWhere('mo_ta', 'like', $keyword);
+            });
+        }
+
+        if ($request->filled('gia_tu')) {
+            $query->whereRaw('COALESCE(NULLIF(gia_khuyen_mai, 0), gia) >= ?', [(float) $request->gia_tu]);
+        }
+        if ($request->filled('gia_den')) {
+            $query->whereRaw('COALESCE(NULLIF(gia_khuyen_mai, 0), gia) <= ?', [(float) $request->gia_den]);
+        }
+
+        if ($request->query('sap_xep') === 'gia_tang') {
+            $query->orderByRaw('COALESCE(NULLIF(gia_khuyen_mai, 0), gia) ASC');
+        } elseif ($request->query('sap_xep') === 'gia_giam') {
+            $query->orderByRaw('COALESCE(NULLIF(gia_khuyen_mai, 0), gia) DESC');
+        } elseif ($request->query('sap_xep') === 'luot_xem') {
+            $query->orderByDesc('luot_xem');
         }
 
         $sanPhams = $query->orderByDesc('id')
@@ -43,7 +63,8 @@ class SanPhamController extends Controller
     // GET /api/san-pham/{slug}
     public function show(string $slug): SanPhamResource
     {
-        $sanPham = SanPham::where('slug', $slug)
+        $sanPham = SanPham::where('status', 1)
+            ->where('slug', $slug)
             ->with(['danhMuc', 'thuongHieu', 'hinhAnhs' => function ($q) {
                 $q->where('status', 1)->orderBy('thu_tu');
             }])
@@ -152,6 +173,16 @@ class SanPhamController extends Controller
     // DELETE /api/san-pham/{id}
     public function destroy(SanPham $sanPham)
     {
+        if (
+            $sanPham->chiTietDonHangs()->exists()
+            || $sanPham->chiTietGioHangs()->exists()
+            || $sanPham->chiTietPhieuKhos()->exists()
+        ) {
+            return response()->json([
+                'message' => 'Không thể xoá sản phẩm đã có trong đơn hàng, giỏ hàng hoặc phiếu kho.',
+            ], 409);
+        }
+
         // xoá ảnh đại diện khỏi ổ đĩa
         if ($sanPham->hinh_anh) {
             Storage::disk('public')->delete($sanPham->hinh_anh);

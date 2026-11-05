@@ -1,5 +1,5 @@
-import UnavailablePage from "@/components/shared/UnavailablePage";
+import ContentManager from "@/components/admin/ContentManager";
 
-export default function Page() {
-  return <UnavailablePage title="Chủ đề — Thêm mới" />;
+export default function CreateTopicPage() {
+  return <ContentManager type="topics" mode="create" />;
 }

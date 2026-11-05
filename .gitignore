@@ -35,6 +35,16 @@ Homestead.yaml
 !/backend/storage/app/private/.gitignore
 /backend/storage/app/public/*
 !/backend/storage/app/public/.gitignore
+!/backend/storage/app/public/uploads/
+/backend/storage/app/public/uploads/*
+!/backend/storage/app/public/uploads/products/
+/backend/storage/app/public/uploads/products/*
+!/backend/storage/app/public/uploads/products/anker-usbc-1m.jpg
+!/backend/storage/app/public/uploads/products/anker-20w.jpg
+!/backend/storage/app/public/uploads/products/logitech-h390.jpg
+!/backend/storage/app/public/uploads/products/asus-vivobook-15.jpg
+!/backend/storage/app/public/uploads/products/iphone-15.jpg
+!/backend/storage/app/public/uploads/products/galaxy-s24.jpg
 /backend/storage/framework/cache/*
 !/backend/storage/framework/cache/.gitignore
 /backend/storage/framework/sessions/*
@@ -57,6 +67,7 @@ Homestead.yaml
 /frontend/dist
 /frontend/build
 /frontend/.next
+/frontend/.next-preview
 /frontend/.nuxt
 /frontend/.vite
 /frontend/coverage

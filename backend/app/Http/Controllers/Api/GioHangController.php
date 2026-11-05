@@ -25,6 +25,10 @@ class GioHangController extends Controller
         $chiTiet = $gioHang->chiTiets()->where('san_pham_id', $sanPham->id)->first();
         $soLuongMoi = ($chiTiet?->so_luong ?? 0) + $request->so_luong;
 
+        if ($sanPham->so_luong < 1) {
+            return response()->json(['message' => 'HẾT HÀNG', 'so_luong_con_lai' => 0], 422);
+        }
+
         if ($soLuongMoi > $sanPham->so_luong) {
             return response()->json([
                 'message' => 'Số lượng sản phẩm trong kho không đủ',
@@ -44,6 +48,10 @@ class GioHangController extends Controller
     {
         $gioHang = $this->layGioHang($request);
         $chiTietGioHang = $gioHang->chiTiets()->with('sanPham')->findOrFail($chiTiet);
+
+        if ($chiTietGioHang->sanPham->so_luong < 1) {
+            return response()->json(['message' => 'HẾT HÀNG', 'so_luong_con_lai' => 0], 422);
+        }
 
         if ($request->so_luong > $chiTietGioHang->sanPham->so_luong) {
             return response()->json([
@@ -74,7 +82,7 @@ class GioHangController extends Controller
 
     private function layGioHang(Request $request): GioHang
     {
-        $userId = $request->user()?->id;
+        $userId = $request->user('sanctum')?->id;
         $sessionId = $request->input('session_id', $request->header('X-Session-Id'));
 
         if (!$userId && !$sessionId) {

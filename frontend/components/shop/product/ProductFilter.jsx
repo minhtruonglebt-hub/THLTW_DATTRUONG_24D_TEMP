@@ -41,17 +41,17 @@ export default function ProductFilter({
   );
 
   return (
-    <aside className="h-fit rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+    <aside className="h-fit rounded-3xl border border-slate-200/70 bg-white p-5 shadow-[0_12px_36px_-30px_rgba(15,23,42,0.5)] lg:sticky lg:top-44">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-bold text-slate-900">Bộ lọc</h2>
-        <button onClick={onReset} className="text-sm text-blue-600 hover:underline">
+        <h2 className="text-lg font-extrabold tracking-tight text-slate-900">Bộ lọc</h2>
+        <button onClick={onReset} className="rounded-lg px-2 py-1 text-xs font-semibold text-blue-700 transition hover:bg-blue-50">
           Xoá lọc
         </button>
       </div>
 
       {/* ----- Danh mục ----- */}
       <div className="border-t border-slate-100 py-4">
-        <h3 className="mb-2 text-sm font-semibold uppercase text-slate-500">Danh mục</h3>
+        <h3 className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.14em] text-slate-400">Danh mục</h3>
 
         <button
           onClick={() => onCategoryChange("")}
@@ -73,7 +73,7 @@ export default function ProductFilter({
 
       {/* ----- Khoảng giá ----- */}
       <div className="border-t border-slate-100 py-4">
-        <h3 className="mb-2 text-sm font-semibold uppercase text-slate-500">Khoảng giá (₫)</h3>
+        <h3 className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.14em] text-slate-400">Khoảng giá (₫)</h3>
         <div className="flex items-center gap-2">
           <input
             type="number"
@@ -97,7 +97,7 @@ export default function ProductFilter({
 
       {/* ----- Thương hiệu ----- */}
       <div className="border-t border-slate-100 pt-4">
-        <h3 className="mb-2 text-sm font-semibold uppercase text-slate-500">Thương hiệu</h3>
+        <h3 className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.14em] text-slate-400">Thương hiệu</h3>
 
         <label className="flex cursor-pointer items-center gap-2 py-1.5 text-sm text-slate-700">
           <input

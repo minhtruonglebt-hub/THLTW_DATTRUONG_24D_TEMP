@@ -19,16 +19,16 @@ export function Table({ headers, hasActions, isEmpty, children }: TableProps) {
   const columnCount = headers.length + (hasActions ? 1 : 0);
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-stone-200 bg-white shadow-sm">
+    <div className="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white shadow-[0_8px_28px_-24px_rgba(15,23,42,0.5)]">
       <table className="w-full text-left text-sm">
-        <thead className="bg-stone-100/80 text-slate-600">
+        <thead className="bg-slate-50 text-[11px] uppercase tracking-[0.12em] text-slate-500">
           <tr>
             {headers.map((h) => (
-              <th key={h} className="whitespace-nowrap px-4 py-3 font-medium">
+              <th key={h} className="whitespace-nowrap px-4 py-4 font-bold">
                 {h}
               </th>
             ))}
-            {hasActions && <th className="px-4 py-3 text-right font-medium">Thao tác</th>}
+            {hasActions && <th className="px-4 py-4 text-right font-bold">Thao tác</th>}
           </tr>
         </thead>
         <tbody>
@@ -48,10 +48,10 @@ export function Table({ headers, hasActions, isEmpty, children }: TableProps) {
 
 // Một dòng của bảng
 export function Tr({ children }: { children: React.ReactNode }) {
-  return <tr className="border-t border-stone-100 align-middle even:bg-stone-50/50 hover:bg-teal-50/40">{children}</tr>;
+  return <tr className="border-t border-slate-100 align-middle transition-colors even:bg-slate-50/40 hover:bg-blue-50/50">{children}</tr>;
 }
 
 // Một ô của bảng (right = ô cuối cùng chứa nút, căn phải)
 export function Td({ children, right }: { children: React.ReactNode; right?: boolean }) {
-  return <td className={right ? "whitespace-nowrap px-4 py-3 text-right" : "px-4 py-3"}>{children}</td>;
+  return <td className={right ? "whitespace-nowrap px-4 py-3.5 text-right" : "px-4 py-3.5"}>{children}</td>;
 }
