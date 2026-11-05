@@ -510,10 +510,10 @@ CREATE TABLE `nguoi_dung` (
 --
 
 INSERT INTO `nguoi_dung` (`id`, `username`, `password`, `ho_ten`, `email`, `so_dien_thoai`, `dia_chi`, `vai_tro`, `status`, `created_at`, `updated_at`) VALUES
-(1, 'admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2,uheWG/igi', 'Quan tri vien', 'admin@example.com', '0900000001', 'TP. Ho Chi Minh', 'admin', 1, '2026-10-30 17:36:27', '2026-10-30 17:36:27'),
-(2, 'khachhang01', '$2y$10$UczEOKwIII9IGKW9ApbHzeIybnk2gB1N766IlIEkg8liudYNJtfhK', 'Nguyen Van An', 'an@example.com', '0900000002', 'Quan 1, TP. Ho Chi Minh', 'member', 1, '2026-10-30 17:36:27', '2026-10-31 12:23:01'),
-(3, 'khachhang02', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2,uheWG/igi', 'Tran Thi Binh', 'binh@example.com', '0900000003', 'Thu Duc, TP. Ho Chi Minh', 'member', 1, '2026-10-30 17:36:27', '2026-10-30 17:36:27'),
-(4, 'khachhang03', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2,uheWG/igi', 'Le Minh Khang', 'khang@example.com', '0900000004', 'Bien Hoa, Dong Nai', 'member', 1, '2026-10-30 17:36:27', '2026-10-30 17:36:27');
+(1, 'admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Quan tri vien', 'admin@example.com', '0900000001', 'TP. Ho Chi Minh', 'admin', 1, '2026-10-30 17:36:27', '2026-10-30 17:36:27'),
+(2, 'khachhang01', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Nguyen Van An', 'an@example.com', '0900000002', 'Quan 1, TP. Ho Chi Minh', 'member', 1, '2026-10-30 17:36:27', '2026-10-31 12:23:01'),
+(3, 'khachhang02', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Tran Thi Binh', 'binh@example.com', '0900000003', 'Thu Duc, TP. Ho Chi Minh', 'member', 1, '2026-10-30 17:36:27', '2026-10-30 17:36:27'),
+(4, 'khachhang03', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Le Minh Khang', 'khang@example.com', '0900000004', 'Bien Hoa, Dong Nai', 'member', 1, '2026-10-30 17:36:27', '2026-10-30 17:36:27');
 
 -- --------------------------------------------------------
 
